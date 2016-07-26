@@ -45,7 +45,7 @@ public class Lexer {
 		keywords.add("out");
 		keywords.add("std_logic");
 		keywords.add("end");
-		keywords.add("ARCHITECTURE");
+		keywords.add("architecture");
 		keywords.add("of");
 		keywords.add("begin");
 	}

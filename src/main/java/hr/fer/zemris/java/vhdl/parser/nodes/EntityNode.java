@@ -10,6 +10,7 @@ public class EntityNode implements INode {
 	private String name;
 	private List<InputNode> inputs;
 	private List<OutputNode> outputs;
+	private EndNode end;
 
 	public EntityNode(String name) {
 		this.name = name;
@@ -33,6 +34,14 @@ public class EntityNode implements INode {
 
 	public String getName() {
 		return name;
+	}
+
+	public EndNode getEnd() {
+		return end;
+	}
+
+	public void setEnd(EndNode end) {
+		this.end = end;
 	}
 
 	public List<InputNode> getInputs() {

@@ -10,6 +10,7 @@ public class ArchitectureNode implements INode {
 	private String name;
 	private String entity;
 	private List<ExpressionNode> expressions;
+	private EndNode end;
 
 	public ArchitectureNode(String name, String entity) {
 		this.name = name;
@@ -26,5 +27,13 @@ public class ArchitectureNode implements INode {
 
 	public List<ExpressionNode> getExpressions() {
 		return expressions;
+	}
+
+	public EndNode getEnd() {
+		return end;
+	}
+
+	public void setEnd(EndNode end) {
+		this.end = end;
 	}
 }

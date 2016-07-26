@@ -3,15 +3,23 @@ package hr.fer.zemris.java.vhdl.parser;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.EndNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.ExpressionNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.IExpressionElement;
 import hr.fer.zemris.java.vhdl.parser.nodes.INode;
 import hr.fer.zemris.java.vhdl.parser.nodes.InputNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.OperatorNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.OutputNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.VariableNode;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
 
 /**
  * Created by Dominik on 25.7.2016..
@@ -62,15 +70,103 @@ public class Parser {
 		lexer.nextToken();
 		programNode.addChild(parseEntity());
 
-		//checkType(TokenType.KEYWORD, "architecture", "Expected ARCHITECTURE block.");
-		//lexer.nextToken();
-		//programNode.addChild(parseArchitecture());
+		while (!isTokenOfType(TokenType.EOF)) {
+			checkType(TokenType.KEYWORD, "architecture", "Expected ARCHITECTURE block.");
+			lexer.nextToken();
+			programNode.addChild(parseArchitecture());
+		}
 
 		return programNode;
 	}
 
 	private ArchitectureNode parseArchitecture() {
-		return null;
+		checkType(TokenType.IDENT, "Expected identification.");
+		String name = (String) currentValue();
+		lexer.nextToken();
+
+		checkType(TokenType.KEYWORD, "of", "Expected keyword OF");
+		lexer.nextToken();
+
+		checkType(TokenType.IDENT, "Expected identification.");
+		String entity = (String) currentValue();
+		ArchitectureNode node = new ArchitectureNode(name, entity);
+		lexer.nextToken();
+
+		checkType(TokenType.KEYWORD, "is", "Expected keyword IS");
+		lexer.nextToken();
+
+		checkType(TokenType.KEYWORD, "begin", "Expected keyword BEGIN");
+		lexer.nextToken();
+
+		while (!isTokenOfType(TokenType.KEYWORD) || !"end".equals(currentValue())) {
+			node.addExpression(parseArchLine());
+		}
+		lexer.nextToken();
+
+		checkType(TokenType.IDENT, "Expected identification");
+		EndNode end = new EndNode((String) currentValue());
+		node.setEnd(end);
+		lexer.nextToken();
+
+		checkType(TokenType.SEMICOLON, "; expected");
+		lexer.nextToken();
+
+		return node;
+	}
+
+	private ExpressionNode parseArchLine() {
+		checkType(TokenType.IDENT, "Expected identification.");
+		VariableNode variable = new VariableNode((String) currentValue());
+		lexer.nextToken();
+
+		checkType(TokenType.ASSIGN, "Expected <=");
+		lexer.nextToken();
+
+		return new ExpressionNode(variable, parseExpression());
+	}
+
+	private Queue<IExpressionElement> parseExpression() {
+		//Shunting-yard algorithm
+		Queue<IExpressionElement> output = new LinkedList<>();
+		Stack<OperatorNode> stack = new Stack<>();
+
+		do {
+			if (isTokenOfType(TokenType.IDENT)) {
+				output.add(new VariableNode((String) currentValue()));
+			} else if (isTokenOfType(TokenType.OPERATORS)) {
+				while(!stack.empty() && stack.peek().getName().equals
+						("not")) {
+					output.add(stack.pop());
+				}
+
+				stack.add(new OperatorNode((String) currentValue()));
+			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
+				stack.add(new OperatorNode("("));
+			} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
+				try {
+					while(!stack.peek().getName().equals("(")) {
+						output.add(stack.pop());
+					}
+
+					stack.pop();
+				} catch (EmptyStackException e) {
+					throw new ParserException("Invalid expression. ( missing.");
+				}
+			} else if(isTokenOfType(TokenType.SEMICOLON)) {
+				lexer.nextToken();
+				break;
+			} else {
+				throw new ParserException("Invalid expression");
+			}
+
+			lexer.nextToken();
+		} while (true);
+
+		while(!stack.empty()) {
+			output.add(stack.pop());
+		}
+
+		return output;
 	}
 
 	private EntityNode parseEntity() {
@@ -87,15 +183,14 @@ public class Parser {
 		checkType(TokenType.OPEN_PARENTHESES, "Expected (");
 		lexer.nextToken();
 
-
 		boolean last = false;
-		while(!last) {
-			while(isTokenOfType(TokenType.SEMICOLON)) {
+		while (!last) {
+			while (isTokenOfType(TokenType.SEMICOLON)) {
 				lexer.nextToken();
 			}
 
 			EntityLine line = parseEntityLine();
-			if(line.definition instanceof InputNode) {
+			if (line.definition instanceof InputNode) {
 				entity.addInput((InputNode) line.definition);
 			} else if (line.definition instanceof OutputNode) {
 				entity.addOutput((OutputNode) line.definition);
@@ -106,15 +201,25 @@ public class Parser {
 			last = line.last;
 		}
 
-		return null;
+		checkType(TokenType.KEYWORD, "end", "Keyword END expected.");
+		lexer.nextToken();
+
+		checkType(TokenType.IDENT, entity.getName(), "Entity name expected.");
+		entity.setEnd(new EndNode((String) currentValue()));
+		lexer.nextToken();
+
+		checkType(TokenType.SEMICOLON, "; expected");
+		lexer.nextToken();
+
+		return entity;
 	}
 
 	private EntityLine parseEntityLine() {
 		List<VariableNode> variables = new ArrayList<>();
 
 		variables.add(parseVariable());
-		while(true) {
-			if(!isTokenOfType(TokenType.COMMA)) {
+		while (true) {
+			if (!isTokenOfType(TokenType.COMMA)) {
 				break;
 			}
 			lexer.nextToken();
@@ -126,7 +231,7 @@ public class Parser {
 
 		checkType(TokenType.KEYWORD, "Keyword expected.");
 		INode line;
-		if(currentValue().equals("in")) {
+		if (currentValue().equals("in")) {
 			line = new InputNode(variables);
 		} else if (currentValue().equals("out")) {
 			line = new OutputNode(variables);
@@ -138,12 +243,12 @@ public class Parser {
 		checkType(TokenType.KEYWORD, "std_logic", "std_logic keyword expected");
 		lexer.nextToken();
 
-		if(isTokenOfType(TokenType.SEMICOLON)) {
+		if (isTokenOfType(TokenType.SEMICOLON)) {
 			lexer.nextToken();
 			return new EntityLine(line, false);
-		} else if(isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
+		} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
 			lexer.nextToken();
-			if(isTokenOfType(TokenType.SEMICOLON)) {
+			if (isTokenOfType(TokenType.SEMICOLON)) {
 				lexer.nextToken();
 				return new EntityLine(line, true);
 			} else {

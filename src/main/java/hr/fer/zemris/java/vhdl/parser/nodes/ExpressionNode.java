@@ -1,32 +1,24 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class ExpressionNode implements INode {
 	private VariableNode variable;
-	private List<INode> expression;
+	private Queue<IExpressionElement> expression;
 
-	public ExpressionNode(VariableNode variable) {
+	public ExpressionNode(VariableNode variable, Queue<IExpressionElement> expression) {
 		this.variable = variable;
-	}
-
-	public void addExpressionElement(INode element) {
-		if(expression == null) {
-			expression = new ArrayList<>();
-		}
-
-		expression.add(element);
+		this.expression = expression;
 	}
 
 	public VariableNode getVariable() {
 		return variable;
 	}
 
-	public List<INode> getExpression() {
+	public Queue<IExpressionElement> getExpression() {
 		return expression;
 	}
 }
