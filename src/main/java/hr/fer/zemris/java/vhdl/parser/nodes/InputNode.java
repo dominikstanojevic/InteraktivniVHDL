@@ -1,23 +1,18 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class InputNode implements INode {
-	private Set<VariableNode> inputs;
+	private List<VariableNode> inputs;
 
-	public void addInput(VariableNode input) {
-		if(inputs == null) {
-			inputs = new HashSet<>();
-		}
-
-		inputs.add(input);
+	public InputNode(List<VariableNode> inputs) {
+		this.inputs = inputs;
 	}
 
-	public Set<VariableNode> getInputs() {
+	public List<VariableNode> getInputs() {
 		return inputs;
 	}
 }

@@ -7,8 +7,13 @@ import java.util.List;
  * Created by Dominik on 25.7.2016..
  */
 public class EntityNode implements INode {
+	private String name;
 	private List<InputNode> inputs;
 	private List<OutputNode> outputs;
+
+	public EntityNode(String name) {
+		this.name = name;
+	}
 
 	public void addInput(InputNode input) {
 		if(inputs == null) {
@@ -24,6 +29,10 @@ public class EntityNode implements INode {
 		}
 
 		outputs.add(output);
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public List<InputNode> getInputs() {
