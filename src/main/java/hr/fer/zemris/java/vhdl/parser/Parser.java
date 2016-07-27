@@ -3,10 +3,10 @@ package hr.fer.zemris.java.vhdl.parser;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.DeclarationNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ExpressionNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.IExpressionElement;
-import hr.fer.zemris.java.vhdl.parser.nodes.INode;
 import hr.fer.zemris.java.vhdl.parser.nodes.InputNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.Operator;
 import hr.fer.zemris.java.vhdl.parser.nodes.OutputNode;
@@ -103,11 +103,7 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.IDENT, "Expected identification");
-		if (!node.getName().equals(currentValue())) {
-			throw new ParserException(
-					"Invalid name. Expected: " + node.getName() + ", got: " + currentValue()
-					+ ".");
-		}
+		node.setEnd((String) currentValue());
 		lexer.nextToken();
 
 		checkType(TokenType.SEMICOLON, "; expected");
@@ -191,13 +187,7 @@ public class Parser {
 			}
 
 			EntityLine line = parseEntityLine();
-			if (line.definition instanceof InputNode) {
-				entity.addInput((InputNode) line.definition);
-			} else if (line.definition instanceof OutputNode) {
-				entity.addOutput((OutputNode) line.definition);
-			} else {
-				throw new ParserException("Illegal input/output definition");
-			}
+			entity.addDeclarationNode(line.definition);
 
 			last = line.last;
 		}
@@ -206,11 +196,7 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.IDENT, entity.getName(), "Entity name expected.");
-		if (!entity.getName().equals(currentValue())) {
-			throw new ParserException(
-					"Invalid name. Expected: " + entity.getName() + ", " + "got: "
-					+ currentValue());
-		}
+		entity.setEnd((String) currentValue());
 		lexer.nextToken();
 
 		checkType(TokenType.SEMICOLON, "; expected");
@@ -235,7 +221,7 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.KEYWORD, "Keyword expected.");
-		INode line;
+		DeclarationNode line;
 		if (currentValue().equals("in")) {
 			line = new InputNode(variables);
 		} else if (currentValue().equals("out")) {
@@ -274,10 +260,10 @@ public class Parser {
 	}
 
 	private static class EntityLine {
-		INode definition;
+		DeclarationNode definition;
 		boolean last;
 
-		public EntityLine(INode definition, boolean last) {
+		public EntityLine(DeclarationNode definition, boolean last) {
 			this.definition = definition;
 			this.last = last;
 		}

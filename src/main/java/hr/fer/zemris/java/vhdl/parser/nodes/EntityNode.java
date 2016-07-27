@@ -10,39 +10,35 @@ import java.util.List;
  */
 public class EntityNode implements INode {
 	private String name;
-	private List<InputNode> inputs;
-	private List<OutputNode> outputs;
+	private List<DeclarationNode> declarations;
+	private String end;
 
 	public EntityNode(String name) {
 		this.name = name;
 	}
 
-	public void addInput(InputNode input) {
-		if(inputs == null) {
-			inputs = new ArrayList<>();
+	public void addDeclarationNode(DeclarationNode node) {
+		if(declarations == null) {
+			declarations = new ArrayList<>();
 		}
 
-		inputs.add(input);
-	}
-
-	public void addOutput(OutputNode output) {
-		if(outputs == null) {
-			outputs = new ArrayList<>();
-		}
-
-		outputs.add(output);
+		declarations.add(node);
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public List<InputNode> getInputs() {
-		return inputs;
+	public String getEnd() {
+		return end;
 	}
 
-	public List<OutputNode> getOutputs() {
-		return outputs;
+	public void setEnd(String end) {
+		this.end = end;
+	}
+
+	public List<DeclarationNode> getDeclarations() {
+		return declarations;
 	}
 
 	@Override

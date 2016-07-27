@@ -7,15 +7,10 @@ import java.util.List;
 /**
  * Created by Dominik on 25.7.2016..
  */
-public class OutputNode implements INode {
-	private List<Variable> outputs;
+public class OutputNode extends DeclarationNode {
 
-	public OutputNode(List<Variable> outputs) {
-		this.outputs = outputs;
-	}
-
-	public List<Variable> getOutputs() {
-		return outputs;
+	public OutputNode(List<Variable> variables) {
+		super(variables);
 	}
 
 	@Override

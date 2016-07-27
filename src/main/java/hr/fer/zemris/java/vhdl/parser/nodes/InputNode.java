@@ -7,15 +7,10 @@ import java.util.List;
 /**
  * Created by Dominik on 25.7.2016..
  */
-public class InputNode implements INode {
-	private List<Variable> inputs;
+public class InputNode extends DeclarationNode  {
 
-	public InputNode(List<Variable> inputs) {
-		this.inputs = inputs;
-	}
-
-	public List<Variable> getInputs() {
-		return inputs;
+	public InputNode(List<Variable> variables) {
+		super(variables);
 	}
 
 	@Override
