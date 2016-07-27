@@ -1,18 +1,25 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
+import hr.fer.zemris.java.vhdl.executor.IVisitor;
+
 import java.util.List;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class OutputNode implements INode {
-	private List<VariableNode> outputs;
+	private List<Variable> outputs;
 
-	public OutputNode(List<VariableNode> outputs) {
+	public OutputNode(List<Variable> outputs) {
 		this.outputs = outputs;
 	}
 
-	public List<VariableNode> getOutputs() {
+	public List<Variable> getOutputs() {
 		return outputs;
+	}
+
+	@Override
+	public void accept(IVisitor visitor) {
+		visitor.visitOutputNode(this);
 	}
 }

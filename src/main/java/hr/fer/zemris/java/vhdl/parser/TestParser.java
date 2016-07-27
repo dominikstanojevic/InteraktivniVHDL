@@ -10,8 +10,8 @@ public class TestParser {
 	public static void main(String[] args) {
 		String program = "entity majority IS port ( A, B, C: in std_logic;\n\t\tY:out "
 						 + "std_logic\n);end majority;\n\nARCHITECTURE concurrent of "
-						 + "majority is\n\nbegin Y<=(A AND B) or C;"
-						 + "\nend conncurent;";
+						 + "majority is\n\nbegin Y<=(A or B) or (B or A) and (C and A);"
+						 + "\nend concurrent;";
 
 		Lexer lexer = new Lexer(program);
 		new Parser(lexer);

@@ -1,5 +1,7 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
+import hr.fer.zemris.java.vhdl.executor.IVisitor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,6 @@ public class EntityNode implements INode {
 	private String name;
 	private List<InputNode> inputs;
 	private List<OutputNode> outputs;
-	private EndNode end;
 
 	public EntityNode(String name) {
 		this.name = name;
@@ -36,19 +37,16 @@ public class EntityNode implements INode {
 		return name;
 	}
 
-	public EndNode getEnd() {
-		return end;
-	}
-
-	public void setEnd(EndNode end) {
-		this.end = end;
-	}
-
 	public List<InputNode> getInputs() {
 		return inputs;
 	}
 
 	public List<OutputNode> getOutputs() {
 		return outputs;
+	}
+
+	@Override
+	public void accept(IVisitor visitor) {
+		visitor.visitEntityNode(this);
 	}
 }

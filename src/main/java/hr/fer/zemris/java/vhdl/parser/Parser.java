@@ -3,16 +3,15 @@ package hr.fer.zemris.java.vhdl.parser;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
-import hr.fer.zemris.java.vhdl.parser.nodes.EndNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ExpressionNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.IExpressionElement;
 import hr.fer.zemris.java.vhdl.parser.nodes.INode;
 import hr.fer.zemris.java.vhdl.parser.nodes.InputNode;
-import hr.fer.zemris.java.vhdl.parser.nodes.OperatorNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.Operator;
 import hr.fer.zemris.java.vhdl.parser.nodes.OutputNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
-import hr.fer.zemris.java.vhdl.parser.nodes.VariableNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.Variable;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -104,8 +103,11 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.IDENT, "Expected identification");
-		EndNode end = new EndNode((String) currentValue());
-		node.setEnd(end);
+		if (!node.getName().equals(currentValue())) {
+			throw new ParserException(
+					"Invalid name. Expected: " + node.getName() + ", got: " + currentValue()
+					+ ".");
+		}
 		lexer.nextToken();
 
 		checkType(TokenType.SEMICOLON, "; expected");
@@ -116,7 +118,7 @@ public class Parser {
 
 	private ExpressionNode parseArchLine() {
 		checkType(TokenType.IDENT, "Expected identification.");
-		VariableNode variable = new VariableNode((String) currentValue());
+		Variable variable = new Variable((String) currentValue());
 		lexer.nextToken();
 
 		checkType(TokenType.ASSIGN, "Expected <=");
@@ -128,23 +130,22 @@ public class Parser {
 	private Queue<IExpressionElement> parseExpression() {
 		//Shunting-yard algorithm
 		Queue<IExpressionElement> output = new LinkedList<>();
-		Stack<OperatorNode> stack = new Stack<>();
+		Stack<Operator> stack = new Stack<>();
 
 		do {
 			if (isTokenOfType(TokenType.IDENT)) {
-				output.add(new VariableNode((String) currentValue()));
+				output.add(new Variable((String) currentValue()));
 			} else if (isTokenOfType(TokenType.OPERATORS)) {
-				while(!stack.empty() && stack.peek().getName().equals
-						("not")) {
+				while (!stack.empty() && stack.peek().getName().equals("not")) {
 					output.add(stack.pop());
 				}
 
-				stack.add(new OperatorNode((String) currentValue()));
+				stack.add(new Operator((String) currentValue()));
 			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
-				stack.add(new OperatorNode("("));
+				stack.add(new Operator("("));
 			} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
 				try {
-					while(!stack.peek().getName().equals("(")) {
+					while (!stack.peek().getName().equals("(")) {
 						output.add(stack.pop());
 					}
 
@@ -152,7 +153,7 @@ public class Parser {
 				} catch (EmptyStackException e) {
 					throw new ParserException("Invalid expression. ( missing.");
 				}
-			} else if(isTokenOfType(TokenType.SEMICOLON)) {
+			} else if (isTokenOfType(TokenType.SEMICOLON)) {
 				lexer.nextToken();
 				break;
 			} else {
@@ -162,7 +163,7 @@ public class Parser {
 			lexer.nextToken();
 		} while (true);
 
-		while(!stack.empty()) {
+		while (!stack.empty()) {
 			output.add(stack.pop());
 		}
 
@@ -205,7 +206,11 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.IDENT, entity.getName(), "Entity name expected.");
-		entity.setEnd(new EndNode((String) currentValue()));
+		if (!entity.getName().equals(currentValue())) {
+			throw new ParserException(
+					"Invalid name. Expected: " + entity.getName() + ", " + "got: "
+					+ currentValue());
+		}
 		lexer.nextToken();
 
 		checkType(TokenType.SEMICOLON, "; expected");
@@ -215,7 +220,7 @@ public class Parser {
 	}
 
 	private EntityLine parseEntityLine() {
-		List<VariableNode> variables = new ArrayList<>();
+		List<Variable> variables = new ArrayList<>();
 
 		variables.add(parseVariable());
 		while (true) {
@@ -259,10 +264,10 @@ public class Parser {
 		}
 	}
 
-	private VariableNode parseVariable() {
+	private Variable parseVariable() {
 
 		checkType(TokenType.IDENT, currentValue() + " is not valid identifier.");
-		VariableNode variable = new VariableNode((String) currentValue());
+		Variable variable = new Variable((String) currentValue());
 		lexer.nextToken();
 
 		return variable;
