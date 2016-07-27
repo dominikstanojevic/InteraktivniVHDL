@@ -135,11 +135,12 @@ public class Parser {
 			} else if (isTokenOfType(TokenType.CONSTANT)) {
 				output.add(new Constant((char) currentValue()));
 			} else if (isTokenOfType(TokenType.OPERATORS)) {
-				while (!stack.empty() && stack.peek().getName().equals("not")) {
-					output.add(stack.pop());
+				Operator op = new Operator((String) currentValue());
+				if (!stack.empty()) {
+					checkOperatorsOrder(stack.peek(), op);
 				}
 
-				stack.add(new Operator((String) currentValue()));
+				stack.add(op);
 			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 				stack.add(new Operator("("));
 			} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
@@ -260,6 +261,19 @@ public class Parser {
 		lexer.nextToken();
 
 		return variable;
+	}
+
+	private void checkOperatorsOrder(Operator first, Operator second) {
+		if (!(first.getName().equals("not") && second.getName().equals("not"))) {
+			return;
+		}
+		if (first.getName().equals("(") || second.getName().equals("(")) {
+			return;
+		}
+
+		throw new ParserException(
+				"Illegal expression for operands: " + first.getName() + " " + "and " + second
+						.getName() + ".");
 	}
 
 	private static class EntityLine {

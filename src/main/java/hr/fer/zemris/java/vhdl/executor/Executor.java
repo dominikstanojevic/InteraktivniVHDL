@@ -157,10 +157,11 @@ public class Executor {
 
 		String program = "entity majority IS port ( A, B, C: in std_logic;\n\t\tY, Z:out "
 						 + "std_logic\n);end majority;\n\nARCHITECTURE " + "concurrent of "
-						 + "majority is\n\nbegin Y<= not (A or 'U') or (B or not A) and (C or "
-						 + "A);\nZ<=A nand B or C;" + "\nend concurrent;";
+						 + "majority is\n\nbegin Y<= not ((A or 'U') or (B or not A)) and (C "
+						 + "or "
+						 + "A);\nZ<=not A or B;" + "\nend concurrent;";
 
-		Lexer lexer = new Lexer(test);
+		Lexer lexer = new Lexer(program);
 		Parser parser = new Parser(lexer);
 		Executor executor = new Executor(parser.getProgramNode());
 		Map<String, Boolean> variables = executor.compute();
@@ -242,6 +243,7 @@ public class Executor {
 
 		return stack.pop();
 	}
+
 
 	private Map<String, Boolean> addVariables(
 			Map<String, Boolean> inputs, Set<String> outputs) {
