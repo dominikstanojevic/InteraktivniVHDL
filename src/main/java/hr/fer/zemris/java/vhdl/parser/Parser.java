@@ -3,6 +3,7 @@ package hr.fer.zemris.java.vhdl.parser;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.Constant;
 import hr.fer.zemris.java.vhdl.parser.nodes.DeclarationNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ExpressionNode;
@@ -69,11 +70,11 @@ public class Parser {
 		lexer.nextToken();
 		programNode.addChild(parseEntity());
 
-		while (!isTokenOfType(TokenType.EOF)) {
-			checkType(TokenType.KEYWORD, "architecture", "Expected ARCHITECTURE block.");
-			lexer.nextToken();
-			programNode.addChild(parseArchitecture());
-		}
+		checkType(TokenType.KEYWORD, "architecture", "Expected ARCHITECTURE block.");
+		lexer.nextToken();
+		programNode.addChild(parseArchitecture());
+
+		checkType(TokenType.EOF, "End of file expected.");
 
 		return programNode;
 	}
@@ -131,6 +132,8 @@ public class Parser {
 		do {
 			if (isTokenOfType(TokenType.IDENT)) {
 				output.add(new Variable((String) currentValue()));
+			} else if (isTokenOfType(TokenType.CONSTANT)) {
+				output.add(new Constant((char) currentValue()));
 			} else if (isTokenOfType(TokenType.OPERATORS)) {
 				while (!stack.empty() && stack.peek().getName().equals("not")) {
 					output.add(stack.pop());

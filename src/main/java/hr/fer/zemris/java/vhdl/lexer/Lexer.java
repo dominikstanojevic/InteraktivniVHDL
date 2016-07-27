@@ -81,7 +81,7 @@ public class Lexer {
 			return;
 		}
 
-		if (ismapped(data[currPos])) {
+		if (isMapped(data[currPos])) {
 			scanMapped();
 			return;
 		}
@@ -95,11 +95,40 @@ public class Lexer {
 	}
 
 	private void scanConstant() {
-		currentToken = new Token(TokenType.CONSTANT, data[currPos++] - 48);
+		//skipping '
+		currPos++;
+		int startIndex = currPos;
+
+		while (currPos < data.length && data[currPos] != '\'') {
+			currPos++;
+		}
+
+		int endIndex = currPos;
+		//again skipping '
+		currPos++;
+
+		//it's a signal
+		if (endIndex - startIndex == 1) {
+			currentToken =
+					new Token(TokenType.CONSTANT, Character.toLowerCase(data[startIndex]));
+			return;
+		}
+
+		//it's a vector
+		String value = new String(data, startIndex, endIndex - startIndex);
+		currentToken = new Token(TokenType.CONSTANT_VECTOR, value);
+	}
+
+	private boolean isConstantCharacter(char c) {
+		if (c == '0' || c == '1' || c == 'u' || c == 'U') {
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean isConstant(char c) {
-		if (c == 48 || c == 49) {
+		if (c == '\'') {
 			return true;
 		}
 
@@ -118,7 +147,7 @@ public class Lexer {
 		currentToken = new Token(mapper.get(s + data[currPos++]), null);
 	}
 
-	private boolean ismapped(char c) {
+	private boolean isMapped(char c) {
 		String s = Character.toString(c);
 
 		if (mapper.containsKey(s)) {

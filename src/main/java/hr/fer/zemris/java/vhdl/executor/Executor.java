@@ -14,12 +14,14 @@ import hr.fer.zemris.java.vhdl.models.Architecture;
 import hr.fer.zemris.java.vhdl.models.Entity;
 import hr.fer.zemris.java.vhdl.parser.Parser;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.Constant;
 import hr.fer.zemris.java.vhdl.parser.nodes.DeclarationNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ExpressionNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.IExpressionElement;
 import hr.fer.zemris.java.vhdl.parser.nodes.INode;
 import hr.fer.zemris.java.vhdl.parser.nodes.InputNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.InvalidConstantException;
 import hr.fer.zemris.java.vhdl.parser.nodes.Operator;
 import hr.fer.zemris.java.vhdl.parser.nodes.OutputNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
@@ -151,7 +153,7 @@ public class Executor {
 	public static void main(String[] args) {
 		String program = "entity majority IS port ( A, B, C: in std_logic;\n\t\tY, Z:out "
 						 + "std_logic\n);end majority;\n\nARCHITECTURE " + "concurrent of "
-						 + "majority is\n\nbegin Y<= not (A or B) or (B or not A) and (C or "
+						 + "majority is\n\nbegin Y<= not (A or 'U') or (B or not A) and (C or "
 						 + "A);\nZ<=A nand B or C;" + "\nend concurrent;";
 
 		Lexer lexer = new Lexer(program);
@@ -193,6 +195,15 @@ public class Executor {
 		for (IExpressionElement element : expression) {
 			if (element instanceof Variable) {
 				stack.push(variables.get(((Variable) element).getName()));
+				continue;
+			}
+
+			if (element instanceof Constant) {
+				try {
+					stack.push(((Constant) element).getConstant());
+				} catch (InvalidConstantException e) {
+					throw new ExecutorException(e.getMessage());
+				}
 				continue;
 			}
 
