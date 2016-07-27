@@ -163,7 +163,7 @@ public class Executor {
 		Map<String, Boolean> variables = executor.compute();
 
 		variables.forEach((k, v) -> System.out
-				.println("Variable: " + k + ", value: " + (v == null ? "Unknown" : v)));
+				.println("Variable: " + k + ", value: " + (v == null ? "Uninitialized" : v)));
 	}
 
 	private static Map<String, Boolean> getInputs(Set<String> inputs) {

@@ -6,6 +6,6 @@ END Test;
 
 architecture arch OF Test IS
 BEGIN
-b <= (k and d) or (l and c) nor (l xor k) nand (c nor d);
+b <= (((k and d) or (l and c)) nor (l xor k)) nand (c nor d);
 END arch;
 	

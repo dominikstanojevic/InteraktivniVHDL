@@ -267,7 +267,7 @@ public class Parser {
 	}
 
 	private void checkOperatorsOrder(Operator first, Operator second) {
-		if (!(first.getName().equals("not") && second.getName().equals("not"))) {
+		if (first.getName().equals("not") ^ second.getName().equals("not")) {
 			return;
 		}
 		if (first.getName().equals("(") || second.getName().equals("(")) {
