@@ -8,6 +8,7 @@ import hr.fer.zemris.java.vhdl.executor.operators.NOROperator;
 import hr.fer.zemris.java.vhdl.executor.operators.NOTOperator;
 import hr.fer.zemris.java.vhdl.executor.operators.OROperator;
 import hr.fer.zemris.java.vhdl.executor.operators.UnaryOperator;
+import hr.fer.zemris.java.vhdl.executor.operators.XNOROperator;
 import hr.fer.zemris.java.vhdl.executor.operators.XOROperator;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.models.Architecture;
@@ -50,6 +51,7 @@ public class Executor {
 		operators.put("xor", new XOROperator());
 		operators.put("nand", new NANDOperator());
 		operators.put("nor", new NOROperator());
+		operators.put("xnor", new XNOROperator());
 	}
 
 	private Entity entity;
@@ -155,26 +157,20 @@ public class Executor {
 
 		String test = new String(Files.readAllBytes(Paths.get("test.txt")));
 
-		String program = "entity majority IS port ( A, B, C: in std_logic;\n\t\tY, Z:out "
-						 + "std_logic\n);end majority;\n\nARCHITECTURE " + "concurrent of "
-						 + "majority is\n\nbegin Y<= not ((A or 'U') or (B or not A)) and (C "
-						 + "or "
-						 + "A);\nZ<=not A or B;" + "\nend concurrent;";
-
-		Lexer lexer = new Lexer(program);
+		Lexer lexer = new Lexer(test);
 		Parser parser = new Parser(lexer);
 		Executor executor = new Executor(parser.getProgramNode());
 		Map<String, Boolean> variables = executor.compute();
 
 		variables.forEach((k, v) -> System.out
-				.println("Variable: " + k + ", value: " + (v == null ? "Unassigned" : v)));
+				.println("Variable: " + k + ", value: " + (v == null ? "Unknown" : v)));
 	}
 
 	private static Map<String, Boolean> getInputs(Set<String> inputs) {
 		Scanner sc = new Scanner(System.in);
 		Map<String, Boolean> values = new HashMap<>();
 
-		for(String var : inputs) {
+		for (String var : inputs) {
 			System.out.print("Please provide input for variable " + var + ": ");
 			Boolean in = readInput(sc.nextLine().trim());
 
@@ -185,9 +181,15 @@ public class Executor {
 	}
 
 	private static Boolean readInput(String line) {
-		if(line.equals("1")) return true;
-		if(line.equals("0")) return false;
-		if(line.toLowerCase().equals("u")) return null;
+		if (line.equals("1")) {
+			return true;
+		}
+		if (line.equals("0")) {
+			return false;
+		}
+		if (line.toLowerCase().equals("u")) {
+			return null;
+		}
 
 		throw new ExecutorException("Invalid input: " + line);
 	}
@@ -243,7 +245,6 @@ public class Executor {
 
 		return stack.pop();
 	}
-
 
 	private Map<String, Boolean> addVariables(
 			Map<String, Boolean> inputs, Set<String> outputs) {

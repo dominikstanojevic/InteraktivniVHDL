@@ -33,6 +33,7 @@ public class Lexer {
 		operators.add("nand");
 		operators.add("nor");
 		operators.add("not");
+		operators.add("xnor");
 	}
 
 	private static final Set<String> keywords = new HashSet<>();

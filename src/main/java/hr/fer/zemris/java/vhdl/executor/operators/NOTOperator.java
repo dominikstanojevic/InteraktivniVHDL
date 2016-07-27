@@ -6,10 +6,6 @@ package hr.fer.zemris.java.vhdl.executor.operators;
 public class NOTOperator implements UnaryOperator {
 	@Override
 	public Boolean compute(Boolean operand) {
-		if(operand == null) {
-			return null;
-		}
-
-		return !operand;
+		return Operations.not(operand);
 	}
 }

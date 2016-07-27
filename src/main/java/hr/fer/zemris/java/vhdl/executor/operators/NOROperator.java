@@ -6,10 +6,6 @@ package hr.fer.zemris.java.vhdl.executor.operators;
 public class NOROperator implements BinaryOperator {
 	@Override
 	public Boolean compute(Boolean firstOperand, Boolean secondOperand) {
-		if(firstOperand == null || secondOperand == null) {
-			return null;
-		}
-
-		return !(firstOperand || secondOperand);
+		return Operations.not(Operations.or(firstOperand, secondOperand));
 	}
 }

@@ -139,6 +139,9 @@ public class Parser {
 				if (!stack.empty()) {
 					checkOperatorsOrder(stack.peek(), op);
 				}
+				while(!stack.empty() && stack.peek().getName().equals("not")) {
+					output.add(stack.pop());
+				}
 
 				stack.add(op);
 			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
