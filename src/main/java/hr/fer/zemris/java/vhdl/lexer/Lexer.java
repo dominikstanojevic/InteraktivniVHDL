@@ -119,20 +119,9 @@ public class Lexer {
 		currentToken = new Token(TokenType.CONSTANT_VECTOR, value);
 	}
 
-	private boolean isConstantCharacter(char c) {
-		if (c == '0' || c == '1' || c == 'u' || c == 'U') {
-			return true;
-		}
-
-		return false;
-	}
-
 	private boolean isConstant(char c) {
-		if (c == '\'') {
-			return true;
-		}
+		return c == '\'';
 
-		return false;
 	}
 
 	private void scanMapped() {

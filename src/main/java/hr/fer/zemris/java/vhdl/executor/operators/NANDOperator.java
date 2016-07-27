@@ -10,6 +10,6 @@ public class NANDOperator implements BinaryOperator {
 			return null;
 		}
 
-		return firstOperand ? !secondOperand : true;
+		return !(firstOperand && secondOperand);
 	}
 }

@@ -27,9 +27,13 @@ import hr.fer.zemris.java.vhdl.parser.nodes.OutputNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.Variable;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
 
@@ -51,10 +55,7 @@ public class Executor {
 	private Entity entity;
 	private Architecture architecture;
 
-	private ProgramNode programNode;
-
 	public Executor(ProgramNode programNode) {
-		this.programNode = programNode;
 		new Visitor().visitProgramNode(programNode);
 	}
 
@@ -150,31 +151,48 @@ public class Executor {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+
+		String test = new String(Files.readAllBytes(Paths.get("test.txt")));
+
 		String program = "entity majority IS port ( A, B, C: in std_logic;\n\t\tY, Z:out "
 						 + "std_logic\n);end majority;\n\nARCHITECTURE " + "concurrent of "
 						 + "majority is\n\nbegin Y<= not (A or 'U') or (B or not A) and (C or "
 						 + "A);\nZ<=A nand B or C;" + "\nend concurrent;";
 
-		Lexer lexer = new Lexer(program);
+		Lexer lexer = new Lexer(test);
 		Parser parser = new Parser(lexer);
 		Executor executor = new Executor(parser.getProgramNode());
-		Map<String, Boolean> variables = executor.compute(getInputs());
+		Map<String, Boolean> variables = executor.compute();
 
 		variables.forEach((k, v) -> System.out
 				.println("Variable: " + k + ", value: " + (v == null ? "Unassigned" : v)));
 	}
 
-	private static Map<String, Boolean> getInputs() {
-		Map<String, Boolean> inputs = new HashMap<>();
-		inputs.put("A", true);
-		inputs.put("B", true);
-		inputs.put("C", false);
+	private static Map<String, Boolean> getInputs(Set<String> inputs) {
+		Scanner sc = new Scanner(System.in);
+		Map<String, Boolean> values = new HashMap<>();
 
-		return inputs;
+		for(String var : inputs) {
+			System.out.print("Please provide input for variable " + var + ": ");
+			Boolean in = readInput(sc.nextLine().trim());
+
+			values.put(var, in);
+		}
+
+		return values;
 	}
 
-	public Map<String, Boolean> compute(Map<String, Boolean> inputs) {
+	private static Boolean readInput(String line) {
+		if(line.equals("1")) return true;
+		if(line.equals("0")) return false;
+		if(line.toLowerCase().equals("u")) return null;
+
+		throw new ExecutorException("Invalid input: " + line);
+	}
+
+	public Map<String, Boolean> compute() {
+		Map<String, Boolean> inputs = getInputs(entity.getInputs());
 		Map<String, Boolean> variables = addVariables(inputs, entity.getOutputs());
 
 		Set<Map.Entry<String, Queue<IExpressionElement>>> expressions =

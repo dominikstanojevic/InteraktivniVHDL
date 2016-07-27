@@ -49,6 +49,10 @@ public class Entity {
 		return outputs;
 	}
 
+	public Set<String> getInputs() {
+		return inputs;
+	}
+
 	public String getName() {
 		return name;
 	}
