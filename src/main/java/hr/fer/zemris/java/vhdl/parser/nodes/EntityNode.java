@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import hr.fer.zemris.java.vhdl.executor.IVisitor;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.Signal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,41 +8,40 @@ import java.util.List;
 /**
  * Created by Dominik on 25.7.2016..
  */
-public class EntityNode implements INode {
+public class EntityNode  {
 	private String name;
-	private List<DeclarationNode> declarations;
-	private String end;
+	private List<Signal> inputs;
+	private List<Signal> outputs;
 
 	public EntityNode(String name) {
 		this.name = name;
-	}
-
-	public void addDeclarationNode(DeclarationNode node) {
-		if(declarations == null) {
-			declarations = new ArrayList<>();
-		}
-
-		declarations.add(node);
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public String getEnd() {
-		return end;
+	public void addSignals(List<Signal> signals, Signal.Type type) {
+		if(type == Signal.Type.IN) {
+			addInputs(signals);
+		} else if (type == Signal.Type.OUT) {
+			addOutputs(signals);
+		}
 	}
 
-	public void setEnd(String end) {
-		this.end = end;
+	private void addInputs(List<Signal> signals) {
+		if(inputs == null) {
+			inputs = new ArrayList<>();
+		}
+
+		inputs.addAll(signals);
 	}
 
-	public List<DeclarationNode> getDeclarations() {
-		return declarations;
-	}
+	private void addOutputs(List<Signal> signals) {
+		if(outputs == null) {
+			outputs = new ArrayList<>();
+		}
 
-	@Override
-	public void accept(IVisitor visitor) {
-		visitor.visitEntityNode(this);
+		outputs.addAll(signals);
 	}
 }

@@ -1,30 +1,27 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import hr.fer.zemris.java.vhdl.executor.IVisitor;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class ProgramNode implements INode {
-	private List<INode> children;
+	private EntityNode entity;
+	private ArchitectureNode architecture;
 
-	public void addChild(INode node) {
-		if(children == null) {
-			children = new ArrayList<>();
-		}
-
-		children.add(node);
+	public EntityNode getEntity() {
+		return entity;
 	}
 
-	public List<INode> getChildren() {
-		return children;
+	public void setEntity(EntityNode entity) {
+		this.entity = entity;
 	}
 
-	@Override
-	public void accept(IVisitor visitor) {
-		visitor.visitProgramNode(this);
+	public ArchitectureNode getArchitecture() {
+		return architecture;
+	}
+
+
+
+	public void setArchitecture(ArchitectureNode architecture) {
+		this.architecture = architecture;
 	}
 }

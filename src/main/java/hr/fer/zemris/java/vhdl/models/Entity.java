@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.models;
 
-import hr.fer.zemris.java.vhdl.executor.PreviousDeclarationException;
+
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,21 +25,6 @@ public class Entity {
 		return outputs.contains(output);
 	}
 
-	public void addInput(String input) throws PreviousDeclarationException {
-		if(inputs.contains(input)) {
-			throw new PreviousDeclarationException(input);
-		}
-
-		inputs.add(input);
-	}
-
-	public void addOutput(String output) throws PreviousDeclarationException {
-		if(outputs.contains(output)) {
-			throw new PreviousDeclarationException(output);
-		}
-
-		outputs.add(output);
-	}
 
 	public boolean containsVariable(String variable) {
 		return containsInput(variable) || containsOutput(variable);

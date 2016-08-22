@@ -5,7 +5,10 @@ ENTITY Test IS PORT(
 END Test;
 
 architecture arch OF Test IS
+	signal pomocni: STD_LOGIC_VECTOR(0 to 2);
 BEGIN
-b <= (((k and d) or (l and c)) nor (l xor k)) nand (c nor d);
+prva: pomocni(0) <= (k or not d) and l;
+druga: pomocni(1) <= (pomocni(0) nor l) or k;
+treca: b <= pomocni(0) xor pomocni(1);
 END arch;
 	
