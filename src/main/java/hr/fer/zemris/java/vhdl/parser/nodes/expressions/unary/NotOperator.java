@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
+import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
@@ -17,8 +18,8 @@ public class NotOperator extends UnaryOperator {
 	}
 
 	@Override
-	public Value evaluate() {
-		Value value = expression.evaluate();
+	public Value evaluate(Table table, String label) {
+		Value value = expression.evaluate(table, label);
 
 		if (value instanceof LogicValue) {
 			return values[((LogicValue) value).ordinal()];

@@ -10,5 +10,7 @@ BEGIN
 prva: pomocni(0) <= (k or not d) and l;
 druga: pomocni(1) <= (pomocni(0) nor l) or k;
 treca: b <= pomocni(0) xor pomocni(1);
+mapiranje: ENTITY work.sklopI port map (k, d, open);
+mapiranje2: ENTITY work.sklopI port map (a => k, b => d, f => b);
 END arch;
 	

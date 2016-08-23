@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
+import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
@@ -22,14 +23,14 @@ public abstract class BinaryOperator extends Expression {
 		this.second = second;
 	}
 
-	protected Value calculate(LogicValue[][] table) {
-		Value first = this.first.evaluate();
-		Value second = this.second.evaluate();
+	protected Value calculate(LogicValue[][] valueTable, Table table, String label) {
+		Value first = this.first.evaluate(table, label);
+		Value second = this.second.evaluate(table, label);
 
 		if (first instanceof LogicValue && second instanceof LogicValue) {
-			return table[((LogicValue) first).ordinal()][((LogicValue) second).ordinal()];
+			return valueTable[((LogicValue) first).ordinal()][((LogicValue) second).ordinal()];
 		} else if (first instanceof Vector && second instanceof Vector) {
-			return evaluateVector((Vector) first, (Vector) second, table);
+			return evaluateVector((Vector) first, (Vector) second, valueTable);
 		}
 
 		throw new RuntimeException(

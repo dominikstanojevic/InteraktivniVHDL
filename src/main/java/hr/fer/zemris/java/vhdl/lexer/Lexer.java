@@ -29,6 +29,8 @@ public class Lexer {
 		mapper.put("(", TokenType.OPEN_PARENTHESES);
 		mapper.put(")", TokenType.CLOSED_PARENTHESES);
 		mapper.put("<=", TokenType.ASSIGN);
+		mapper.put(".", TokenType.DOT);
+		mapper.put("=>", TokenType.MAP);
 	}
 
 	private static final Set<String> operators = new HashSet<>();
@@ -60,6 +62,9 @@ public class Lexer {
 		keywords.add("std_logic_vector");
 		keywords.add("to");
 		keywords.add("downto");
+		keywords.add("work");
+		keywords.add("map");
+		keywords.add("open");
 	}
 
 	public Lexer(String program) {
@@ -188,7 +193,7 @@ public class Lexer {
 			return;
 		}
 
-		//then it's <=
+		//then it's <= or =>
 		tokens.add(new Token(mapper.get(s + data[currPos++]), null));
 	}
 
@@ -199,9 +204,12 @@ public class Lexer {
 			return true;
 		}
 
-		//check for <=
+		//check for <= or =>
 		int tempPos = currPos + 1;
 		if (tempPos < data.length && c == '<' && data[tempPos] == '=') {
+			return true;
+		}
+		if (tempPos < data.length && c == '=' && data[tempPos] == '>') {
 			return true;
 		}
 

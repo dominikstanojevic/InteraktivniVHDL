@@ -3,6 +3,9 @@ package hr.fer.zemris.java.vhdl.parser;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.Token;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
+import hr.fer.zemris.java.vhdl.models.mappers.AssociativeMap;
+import hr.fer.zemris.java.vhdl.models.mappers.EntityMap;
+import hr.fer.zemris.java.vhdl.models.mappers.PositionalMap;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
@@ -12,15 +15,19 @@ import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Constant;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.OperatorFactory;
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.Signal;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalDeclaration;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalExpression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary.IndexerOperator;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetElementStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.Statement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -72,19 +79,17 @@ public class Parser {
 	}
 
 	private ProgramNode parse() {
-		ProgramNode programNode = new ProgramNode();
-
 		checkType(TokenType.KEYWORD, "entity", "Expected entity block.");
 		lexer.nextToken();
-		programNode.setEntity(parseEntity());
+		EntityNode entity = parseEntity();
 
 		checkType(TokenType.KEYWORD, "architecture", "Expected ARCHITECTURE block.");
 		lexer.nextToken();
-		programNode.setArchitecture(parseArchitecture());
+		ArchitectureNode arch = parseArchitecture();
 
 		checkType(TokenType.EOF, "End of file expected.");
 
-		return programNode;
+		return new ProgramNode(entity, arch, table);
 	}
 
 	private ArchitectureNode parseArchitecture() {
@@ -111,7 +116,7 @@ public class Parser {
 		while (isTokenOfType(TokenType.KEYWORD) && "signal".equals(currentValue())) {
 			lexer.nextToken();
 
-			List<Signal> signals = parseInternalSignals();
+			Map<String, SignalDeclaration> signals = parseInternalSignals();
 			node.addSignals(signals);
 		}
 
@@ -135,7 +140,7 @@ public class Parser {
 		return node;
 	}
 
-	private List<Signal> parseInternalSignals() {
+	private Map<String, SignalDeclaration> parseInternalSignals() {
 		List<String> declarations = new ArrayList<>();
 
 		declarations.add(parseSignalDeclaration());
@@ -151,13 +156,13 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.KEYWORD, "Keyword expected.");
-		List<Signal> signals;
+		Map<String, SignalDeclaration> signals;
 		if (currentValue().equals("std_logic")) {
-			signals = createStdSignals(declarations, Signal.Type.INTERNAL);
+			signals = createStdSignals(declarations, SignalDeclaration.Type.INTERNAL);
 			lexer.nextToken();
 		} else if (currentValue().equals("std_logic_vector")) {
 			lexer.nextToken();
-			signals = createVectorSignals(declarations, Signal.Type.INTERNAL);
+			signals = createVectorSignals(declarations, SignalDeclaration.Type.INTERNAL);
 		} else {
 			throw new ParserException("std_logic or std_logic_vector expected.");
 		}
@@ -173,6 +178,9 @@ public class Parser {
 		Token token = lexer.getCurrentToken();
 
 		String label = parseLabel();
+		if(!table.addLabel(label)) {
+			throw new ParserException("Label already declared.");
+		}
 		if (label == null) {
 			lexer.seek(token);
 		}
@@ -184,26 +192,35 @@ public class Parser {
 			if (!table.containsSignal(id)) {
 				throw new ParserException("Undefined signal: " + id + ". ");
 			}
-			Signal signal = table.getSignal(id);
+			SignalDeclaration signalDeclaration = table.getSignal(id);
 
 			if (isTokenOfType(TokenType.ASSIGN)) {
 				lexer.nextToken();
 
-				ExpressionData expression = parseExpression(signal.getTypeOf());
-				statement = new SetStatement(label, table.getSignal(id), expression.expression,
+				ExpressionData expression = parseExpression(signalDeclaration);
+				statement = new SetStatement(label, id, expression.expression,
 						expression.sensitivity);
 			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
-				IndexerOperator indexer = parseAccess(signal);
+				IndexerOperator indexer = parseAccess(id);
 
 				checkType(TokenType.ASSIGN, "Assignment expected.");
 				lexer.nextToken();
 
-				ExpressionData expression = parseExpression(LogicValue.class);
-				statement = new SetElementStatement(label, indexer, expression.expression,
-						expression.sensitivity);
+				ExpressionData expression = parseExpression(new SignalDeclaration(
+						table.getDeclaration(indexer.getSignal()).getSignalType()));
+				statement = new SetElementStatement(label, indexer.getSignal(),
+						expression.expression, expression.sensitivity, indexer.getPosition());
 			} else {
 				throw new ParserException("Expected signal or signal vector.");
 			}
+		} else if (isTokenOfType(TokenType.KEYWORD) && "entity".equals(currentValue())) {
+			lexer.nextToken();
+
+			if (label == null) {
+				throw new ParserException("Port map statement must contain label.");
+			}
+
+			statement = parseMapping(label);
 		} else {
 			throw new ParserException("Expected assignment or mapping");
 		}
@@ -211,8 +228,115 @@ public class Parser {
 		return statement;
 	}
 
-	private IndexerOperator parseAccess(Signal signal) {
-		if (signal.getTypeOf() != Vector.class) {
+	private EntityMap parseMapping(String label) {
+		checkType(TokenType.KEYWORD, "work", "Expected keyword WORK.");
+		lexer.nextToken();
+
+		checkType(TokenType.DOT, "Dot expected");
+		lexer.nextToken();
+
+		checkType(TokenType.IDENT, "Entity identification expected.");
+		String id = (String) currentValue();
+		lexer.nextToken();
+
+		checkType(TokenType.KEYWORD, "port", "Keyword PORT expected.");
+		lexer.nextToken();
+
+		checkType(TokenType.KEYWORD, "map", "Keyword MAP expected.");
+		lexer.nextToken();
+
+		checkType(TokenType.OPEN_PARENTHESES, "( expected");
+		lexer.nextToken();
+
+		Token token = lexer.getCurrentToken();
+		lexer.nextToken();
+
+		EntityMap map;
+		if (isTokenOfType(TokenType.COMMA)) {
+			lexer.seek(token);
+			List<String> signals = parsePositionalMapping();
+
+			map = new PositionalMap(label, id, signals);
+		} else if (isTokenOfType(TokenType.MAP)) {
+			lexer.seek(token);
+			Map<String, String> signals = parseAssociativeMapping();
+
+			map = new AssociativeMap(label, id, signals);
+		} else {
+			throw new ParserException("Invalid port map statement");
+		}
+
+		checkType(TokenType.SEMICOLON, "Semicolon expected");
+		lexer.nextToken();
+
+		return map;
+	}
+
+	private Map<String, String> parseAssociativeMapping() {
+		Map<String, String> signals = new HashMap<>();
+
+		while (true) {
+			String signal1 = (String) currentValue();
+			lexer.nextToken();
+
+			checkType(TokenType.MAP, "Association operator expected");
+			lexer.nextToken();
+
+			String signal2 = (String) currentValue();
+			if (signal2.equals("open")) {
+				signals.put(signal1, null);
+			} else if (table.containsSignal(signal2)) {
+				signals.put(signal1, signal2);
+			} else {
+				throw new ParserException("Signal " + signal2 + " is not declared.");
+			}
+			lexer.nextToken();
+
+			if (isTokenOfType(TokenType.COMMA)) {
+				lexer.nextToken();
+				continue;
+			} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
+				lexer.nextToken();
+				break;
+			} else {
+				throw new ParserException("Illegal sequence for port map statement");
+			}
+		}
+
+		return signals;
+	}
+
+	private List<String> parsePositionalMapping() {
+		List<String> signals = new ArrayList<>();
+
+		while (true) {
+			String signal = (String) currentValue();
+			if (signal.equals("open")) {
+				signals.add(null);
+			} else if (table.containsSignal(signal)) {
+				signals.add(signal);
+			} else {
+				throw new ParserException("Signal " + signal + " is not declared.");
+			}
+			lexer.nextToken();
+
+			if (isTokenOfType(TokenType.COMMA)) {
+				lexer.nextToken();
+				continue;
+			} else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
+				lexer.nextToken();
+				break;
+			} else {
+				throw new ParserException("Illegal sequence for port map statement");
+			}
+		}
+
+		return signals;
+	}
+
+	private IndexerOperator parseAccess(String signal) {
+		if (table.containsSignal(signal)
+			&& table.getSignal(signal).getTypeOf() != Vector.class) {
 			throw new ParserException("Cannot index non vector signal.");
 		}
 
@@ -226,7 +350,7 @@ public class Parser {
 		checkType(TokenType.CLOSED_PARENTHESES, ") expected");
 		lexer.nextToken();
 
-		return new IndexerOperator(signal, position);
+		return new IndexerOperator(new SignalExpression(signal), position);
 	}
 
 	private String parseLabel() {
@@ -258,13 +382,13 @@ public class Parser {
 		return position;
 	}
 
-	private ExpressionData parseExpression(Class typeOf) {
+	private ExpressionData parseExpression(SignalDeclaration signalDeclaration) {
 		//Shunting-yard algorithm
 		Stack<Expression> operands = new Stack<>();
 		Stack<String> operators = new Stack<>();
-		Set<Signal> sensitivity = new HashSet<>();
+		Set<String> sensitivity = new HashSet<>();
 
-		expression(operands, operators, sensitivity, typeOf);
+		expression(operands, operators, sensitivity, signalDeclaration);
 
 		checkType(TokenType.SEMICOLON, "; expected");
 		lexer.nextToken();
@@ -277,14 +401,14 @@ public class Parser {
 	}
 
 	private void expression(
-			Stack<Expression> operands, Stack<String> operators, Set<Signal> sensitivity,
-			Class typeOf) {
-		term(operands, operators, sensitivity, typeOf);
+			Stack<Expression> operands, Stack<String> operators, Set<String> sensitivity,
+			SignalDeclaration signalDeclaration) {
+		term(operands, operators, sensitivity, signalDeclaration);
 
 		while (isTokenOfType(TokenType.OPERATORS) && !currentValue().equals("not")) {
 			pushOperator((String) currentValue(), operators, operands);
 			lexer.nextToken();
-			term(operands, operators, sensitivity, typeOf);
+			term(operands, operators, sensitivity, signalDeclaration);
 		}
 		while (!operators.empty() && !operators.peek().equals("(")) {
 			popOperator(operands, operators);
@@ -307,7 +431,7 @@ public class Parser {
 			popOperator(operands, operators);
 		}
 
-		if(!operators.empty()) {
+		if (!operators.empty()) {
 			checkOperatorsOrder(operators.peek(), operator);
 		}
 
@@ -315,17 +439,17 @@ public class Parser {
 	}
 
 	private void term(
-			Stack<Expression> operands, Stack<String> operators, Set<Signal> sensitivity,
-			Class typeOf) {
+			Stack<Expression> operands, Stack<String> operators, Set<String> sensitivity,
+			SignalDeclaration signalDeclaration) {
 		if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
 			operands.push(new Constant((Value) currentValue()));
 			lexer.nextToken();
 		} else if (isTokenOfType(TokenType.IDENT)) {
-			operands.push(parseSignal(sensitivity, typeOf));
+			operands.push(parseSignal(sensitivity, signalDeclaration));
 		} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 			lexer.nextToken();
 			pushOperator("(", operators, operands);
-			expression(operands, operators, sensitivity, typeOf);
+			expression(operands, operators, sensitivity, signalDeclaration);
 
 			checkType(TokenType.CLOSED_PARENTHESES, "Expected )");
 			operators.pop();
@@ -333,38 +457,39 @@ public class Parser {
 		} else if (isTokenOfType(TokenType.OPERATORS) && currentValue().equals("not")) {
 			pushOperator("not", operators, operands);
 			lexer.nextToken();
-			term(operands, operators, sensitivity, typeOf);
+			term(operands, operators, sensitivity, signalDeclaration);
 		} else {
 			throw new ParserException("Invalid token.");
 		}
 	}
 
-	private Expression parseSignal(Set<Signal> sensitivity, Class typeOf) {
+	private Expression parseSignal(
+			Set<String> sensitivity, SignalDeclaration signalDeclaration) {
 		String name = (String) currentValue();
 		if (!table.containsSignal(name)) {
 			throw new ParserException("Undeclared signal: " + name + ".");
 		}
-		Signal signal = table.getSignal(name);
-		sensitivity.add(signal);
+		SignalDeclaration declaration = table.getDeclaration(name);
+		sensitivity.add(name);
 
-		if (signal.getSignalType() == Signal.Type.OUT) {
+		if (declaration.getSignalType() == SignalDeclaration.Type.OUT) {
 			throw new ParserException(
 					"Output signals cannot be written on the right side of" + " expression.");
 		}
 
 		lexer.nextToken();
 
-		if (signal.getTypeOf() == LogicValue.class || !isTokenOfType(
+		if (declaration.getTypeOf() == LogicValue.class || !isTokenOfType(
 				TokenType.OPEN_PARENTHESES)) {
 
-			if (signal.getTypeOf() != typeOf) {
+			if (declaration.getTypeOf() != signalDeclaration.getTypeOf()) {
 				throw new ParserException(
-						"Signal " + signal.getId() + " is type of: " + signal.getTypeOf() + "."
-						+ " Expected: " + typeOf);
+						"Signal " + name + " is type of: " + declaration.getTypeOf()
+						+ ", expected " + signalDeclaration.getTypeOf() + ".");
 			}
 
-			return signal;
-		} else if (signal.getTypeOf() == Vector.class && isTokenOfType(
+			return new SignalExpression(name);
+		} else if (declaration.getTypeOf() == Vector.class && isTokenOfType(
 				TokenType.OPEN_PARENTHESES)) {
 			lexer.nextToken();
 
@@ -375,11 +500,11 @@ public class Parser {
 			checkType(TokenType.CLOSED_PARENTHESES, "Expected )");
 			lexer.nextToken();
 
-			if (typeOf != LogicValue.class) {
+			if (signalDeclaration.getTypeOf() != LogicValue.class) {
 				throw new ParserException("Cannot assign logic value to vector.");
 			}
 
-			return new IndexerOperator(signal, position);
+			return new IndexerOperator(new SignalExpression(name), position);
 
 		} else {
 			throw new ParserException("Invalid signal type.");
@@ -408,7 +533,7 @@ public class Parser {
 			}
 
 			EntityLine line = parseEntityLine();
-			entity.addSignals(line.signals, line.type);
+			entity.addSignals(line.signals);
 
 			last = line.last;
 		}
@@ -444,18 +569,18 @@ public class Parser {
 		lexer.nextToken();
 
 		checkType(TokenType.KEYWORD, "Keyword expected.");
-		Signal.Type type;
+		SignalDeclaration.Type type;
 		if (currentValue().equals("in")) {
-			type = Signal.Type.IN;
+			type = SignalDeclaration.Type.IN;
 		} else if (currentValue().equals("out")) {
-			type = Signal.Type.OUT;
+			type = SignalDeclaration.Type.OUT;
 		} else {
 			throw new ParserException("IN or OUT keywords expected");
 		}
 		lexer.nextToken();
 
 		checkType(TokenType.KEYWORD, "Keyword expected.");
-		List<Signal> signals;
+		Map<String, SignalDeclaration> signals;
 		if (currentValue().equals("std_logic")) {
 			signals = createStdSignals(declarations, type);
 			lexer.nextToken();
@@ -482,7 +607,8 @@ public class Parser {
 		}
 	}
 
-	private List<Signal> createVectorSignals(List<String> declarations, Signal.Type type) {
+	private Map<String, SignalDeclaration> createVectorSignals(
+			List<String> declarations, SignalDeclaration.Type type) {
 		checkType(TokenType.OPEN_PARENTHESES, "Open parentheses expected.");
 		lexer.nextToken();
 
@@ -508,22 +634,23 @@ public class Parser {
 		checkType(TokenType.CLOSED_PARENTHESES, "Closed parentheses expected.");
 		lexer.nextToken();
 
-		List<Signal> signals = new ArrayList<>();
+		Map<String, SignalDeclaration> signals = new LinkedHashMap<>();
+		SignalDeclaration signal = new SignalDeclaration(type, start, order, end);
 		for (String id : declarations) {
-			Signal signal = new Signal(id, new Vector(start, order, end), type);
-			table.addSignal(signal);
-			signals.add(signal);
+			table.addSignal(id, signal);
+			signals.put(id, signal);
 		}
 
 		return signals;
 	}
 
-	private List<Signal> createStdSignals(List<String> declarations, Signal.Type type) {
-		List<Signal> signals = new ArrayList<>();
+	private Map<String, SignalDeclaration> createStdSignals(
+			List<String> declarations, SignalDeclaration.Type type) {
+		Map<String, SignalDeclaration> signals = new LinkedHashMap<>();
+		SignalDeclaration stdLogic = new SignalDeclaration(type);
 		for (String id : declarations) {
-			Signal stdLogic = new Signal(id, LogicValue.UNINITIALIZED, type);
-			table.addSignal(stdLogic);
-			signals.add(stdLogic);
+			table.addSignal(id, stdLogic);
+			signals.put(id, stdLogic);
 		}
 
 		return signals;
@@ -549,14 +676,14 @@ public class Parser {
 
 		if (first.equals("nand") && second.equals("nand")) {
 			throwOperatorsException(first, second);
+		}
 
-			if (first.equals("nor") && second.equals("nor")) {
-				throwOperatorsException(first, second);
-			}
+		if (first.equals("nor") && second.equals("nor")) {
+			throwOperatorsException(first, second);
+		}
 
-			if (!first.equals("not") && !second.equals("not") && !first.equals(second)) {
-				throwOperatorsException(first, second);
-			}
+		if (!first.equals("not") && !second.equals("not") && !first.equals(second)) {
+			throwOperatorsException(first, second);
 		}
 	}
 
@@ -566,23 +693,22 @@ public class Parser {
 	}
 
 	private static class EntityLine {
-		private List<Signal> signals;
-		private Signal.Type type;
+		private Map<String, SignalDeclaration> signals;
 		private boolean last;
 
-		public EntityLine(List<Signal> signals, Signal.Type type, boolean last) {
+		public EntityLine(
+				Map<String, SignalDeclaration> signals, SignalDeclaration.Type type, boolean last) {
 			this.signals = signals;
-			this.type = type;
 			this.last = last;
 		}
 	}
 
 	private static class ExpressionData {
 		private Expression expression;
-		private Set<Signal> sensitivity;
+		private Set<String> sensitivity;
 
 		public ExpressionData(
-				Expression expression, Set<Signal> sensitivity) {
+				Expression expression, Set<String> sensitivity) {
 			this.expression = expression;
 			this.sensitivity = sensitivity;
 		}

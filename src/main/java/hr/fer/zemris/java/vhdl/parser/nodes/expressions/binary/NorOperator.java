@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
+import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
@@ -19,7 +20,7 @@ public class NorOperator extends BinaryOperator {
 	}
 
 	@Override
-	public Value evaluate() {
-		return calculate(values);
+	public Value evaluate(Table table, String label) {
+		return calculate(values, table, label);
 	}
 }

@@ -1,11 +1,13 @@
 package hr.fer.zemris.java.vhdl.parser;
 
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.Signal;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalDeclaration;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -13,8 +15,9 @@ import java.util.stream.Collectors;
  */
 public class DeclarationTable {
 	private String entryName;
-	private Map<String, Signal> signals;
+	private Map<String, SignalDeclaration> signals;
 	private String archName;
+	private Set<String> labels = new HashSet<>();
 
 	public String getEntryName() {
 		return entryName;
@@ -24,23 +27,23 @@ public class DeclarationTable {
 		this.entryName = entryName;
 	}
 
-	public void addSignal(Signal signal) {
+	public void addSignal(String signal, SignalDeclaration declaration) {
 		if (signals == null) {
 			signals = new HashMap<>();
 		}
 
-		if (signals.containsValue(signal)) {
-			throw new ParserException("Signal " + signal.getId() + " already declared.");
+		if (signals.containsKey(signal)) {
+			throw new ParserException("SignalDeclaration " + signal + " already declared.");
 		}
 
-		signals.put(signal.getId(), signal);
+		signals.put(signal, declaration);
 	}
 
 	public boolean containsSignal(String signal) {
 		return signals.containsKey(signal);
 	}
 
-	public Signal getSignal(String signal) {
+	public SignalDeclaration getSignal(String signal) {
 		return signals.get(signal);
 	}
 
@@ -52,12 +55,25 @@ public class DeclarationTable {
 		this.archName = archName;
 	}
 
-	public List<Signal> getInputSignals() {
-		return signals.values().stream().filter(s -> s.getSignalType() == Signal.Type.IN)
-				.collect(Collectors.toList());
+	public SignalDeclaration getDeclaration(String signal) {
+		return signals.get(signal);
 	}
 
-	public Collection<Signal> getSignals() {
+	public List<String> getInputSignals() {
+		return signals.entrySet().stream()
+				.filter(e -> e.getValue().getSignalType() == SignalDeclaration.Type.IN)
+				.map(e -> e.getKey()).collect(Collectors.toList());
+	}
+
+	public Collection<SignalDeclaration> getSignals() {
 		return signals.values();
+	}
+
+	public boolean addLabel(String label) {
+		if (label == null) {
+			return true;
+		}
+
+		return labels.add(label);
 	}
 }

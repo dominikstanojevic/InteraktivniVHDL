@@ -1,17 +1,16 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.Signal;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalDeclaration;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class EntityNode  {
 	private String name;
-	private List<Signal> inputs;
-	private List<Signal> outputs;
+	private Map<String, SignalDeclaration> declarations;
 
 	public EntityNode(String name) {
 		this.name = name;
@@ -21,27 +20,39 @@ public class EntityNode  {
 		return name;
 	}
 
-	public void addSignals(List<Signal> signals, Signal.Type type) {
-		if(type == Signal.Type.IN) {
-			addInputs(signals);
-		} else if (type == Signal.Type.OUT) {
-			addOutputs(signals);
+	public void addSignals(Map<String, SignalDeclaration> declarations) {
+		if(this.declarations == null) {
+			this.declarations = new LinkedHashMap<>();
 		}
+
+		this.declarations.putAll(declarations);
 	}
 
-	private void addInputs(List<Signal> signals) {
-		if(inputs == null) {
-			inputs = new ArrayList<>();
-		}
-
-		inputs.addAll(signals);
+	public int numberOfSignals() {
+		return declarations.size();
 	}
 
-	private void addOutputs(List<Signal> signals) {
-		if(outputs == null) {
-			outputs = new ArrayList<>();
+	public Map<String, SignalDeclaration> getDeclarations() {
+		return declarations;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
 		}
 
-		outputs.addAll(signals);
+		EntityNode that = (EntityNode) o;
+
+		return name.equals(that.name);
+
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode();
 	}
 }

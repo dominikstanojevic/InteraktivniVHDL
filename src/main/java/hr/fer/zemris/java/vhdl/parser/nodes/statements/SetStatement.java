@@ -1,8 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.statements;
 
-import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.Signal;
 
 import java.util.Objects;
 import java.util.Set;
@@ -11,40 +9,31 @@ import java.util.Set;
  * Created by Dominik on 9.8.2016..
  */
 public class SetStatement extends Statement {
-	private Signal signal;
-	private Value tempValue;
+	private String signal;
 	private Expression expression;
+	private Set<String> sensitivity;
 
 	public SetStatement(
-			String id, Signal signal, Expression expression, Set<Signal> sensitivity) {
-		super(id, sensitivity);
+			String label, String signal, Expression expression, Set<String> sensitivity) {
+		super(label);
 
-		Objects.requireNonNull(signal, "Signal cannot be null");
+		Objects.requireNonNull(signal, "SignalDeclaration cannot be null");
 		Objects.requireNonNull(expression, "Expression cannot be null.");
-
 
 		this.signal = signal;
 		this.expression = expression;
+		this.sensitivity = sensitivity;
 	}
 
-	public SetStatement(Signal signal, Expression expression, Set<Signal> sensitivity) {
-		this(null, signal, expression, sensitivity);
-	}
-
-
-
-	@Override
-	public void execute() {
-		tempValue = expression.evaluate();
-	}
-
-	@Override
-	public Signal assign() {
-		if (tempValue.equals(signal.getValue())) {
-			return null;
-		}
-
-		signal.setValue(tempValue);
+	public String getSignal() {
 		return signal;
+	}
+
+	public Expression getExpression() {
+		return expression;
+	}
+
+	public Set<String> getSensitivity() {
+		return sensitivity;
 	}
 }

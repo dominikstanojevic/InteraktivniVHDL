@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
+import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 
 /**
@@ -13,7 +14,7 @@ public class Constant extends Expression {
 	}
 
 	@Override
-	public Value evaluate() {
+	public Value evaluate(Table table, String label) {
 		return value;
 	}
 }

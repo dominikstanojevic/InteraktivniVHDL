@@ -1,0 +1,12 @@
+entity sklop is port (
+   a,b,c: in std_logic;
+   f1,f2: out std_logic);
+end sklop;
+
+architecture str of sklop is
+   signal pom: std_logic;
+begin
+   s1: ENTITY work.sklopI port map (a => a, b => b, f => pom);
+   s2: ENTITY work.sklopI port map (a => pom, b => c, f => f2);
+   f1 <= pom;
+end str;
