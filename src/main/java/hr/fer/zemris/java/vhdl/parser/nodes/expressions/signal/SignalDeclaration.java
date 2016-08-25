@@ -4,6 +4,8 @@ import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -15,13 +17,26 @@ public class SignalDeclaration {
 		IN, OUT, INTERNAL
 	}
 
+	private static Map<Type, SignalDeclaration> logicDeclarations = new HashMap<>();
+	static {
+		logicDeclarations.put(Type.IN, new SignalDeclaration(Type.IN));
+		logicDeclarations.put(Type.OUT, new SignalDeclaration(Type.OUT));
+		logicDeclarations.put(Type.INTERNAL, new SignalDeclaration(Type.INTERNAL));
+	}
+
 	private Type signalType;
 	private Class typeOf;
 	private Integer start;
 	private Vector.Order order;
 	private Integer end;
 
-	public SignalDeclaration(Type type) {
+	public static SignalDeclaration getLogicDeclaration(Type type) {
+		Objects.requireNonNull(type, "Type cannot be null");
+
+		return logicDeclarations.get(type);
+	}
+
+	private SignalDeclaration(Type type) {
 		this(type, LogicValue.class, null, null, null);
 	}
 

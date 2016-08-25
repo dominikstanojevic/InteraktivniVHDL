@@ -13,7 +13,6 @@ import java.util.Objects;
  * Created by Dominik on 22.8.2016..
  */
 public class Table {
-	private String testedEntity;
 	private Map<String, ProgramNode> components = new HashMap<>();
 	private Map<String, Value> signals = new HashMap<>();
 	private Map<String, String> aliases = new HashMap<>();
@@ -21,8 +20,6 @@ public class Table {
 
 	public Table(String name) {
 		Objects.requireNonNull(name, "Tested entity's name cannot be null.");
-
-		this.testedEntity = name;
 	}
 
 	public Value getValueForSignal(String componentName, String signalName) {

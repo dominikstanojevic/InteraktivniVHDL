@@ -1,16 +1,14 @@
 ENTITY Test IS PORT(
-	k, d, l, c: IN STD_LOGIC;
-	b: OUT STD_LOGIC
+	a, b, c: IN STD_LOGIC;
+	q: OUT STD_LOGIC
 );
 END Test;
 
 architecture arch OF Test IS
-	signal pomocni: STD_LOGIC_VECTOR(0 to 2);
+	signal pomocni1, pomocni2: STD_LOGIC;
 BEGIN
-prva: pomocni(0) <= (k or not d) and l;
-druga: pomocni(1) <= (pomocni(0) nor l) or k;
-treca: b <= pomocni(0) xor pomocni(1);
-mapiranje: ENTITY work.sklopI port map (k, d, open);
-mapiranje2: ENTITY work.sklopI port map (a => k, b => d, f => b);
+mapiranje: ENTITY work.sklopI port map (a, b, pomocni1);
+mapiranje2: ENTITY work.sklopNOR port map (a => a, b => b, f => pomocni2);
+mapiranje3: ENTITY work.sklopOR port map (pomocni1, pomocni2, q);
 END arch;
 	

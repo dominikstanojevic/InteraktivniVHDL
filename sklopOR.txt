@@ -1,0 +1,10 @@
+ENTITY sklopOR IS PORT(
+	a, b : IN STD_LOGIC;
+	f: OUT STD_LOGIC
+);
+END sklopOR;
+
+architecture arch OF sklopOR IS
+BEGIN
+	f <= a or b;
+END arch;

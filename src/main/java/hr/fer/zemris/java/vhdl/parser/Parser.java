@@ -178,7 +178,7 @@ public class Parser {
 		Token token = lexer.getCurrentToken();
 
 		String label = parseLabel();
-		if(!table.addLabel(label)) {
+		if (!table.addLabel(label)) {
 			throw new ParserException("Label already declared.");
 		}
 		if (label == null) {
@@ -206,8 +206,9 @@ public class Parser {
 				checkType(TokenType.ASSIGN, "Assignment expected.");
 				lexer.nextToken();
 
-				ExpressionData expression = parseExpression(new SignalDeclaration(
-						table.getDeclaration(indexer.getSignal()).getSignalType()));
+				ExpressionData expression = parseExpression(SignalDeclaration
+						.getLogicDeclaration(
+								table.getDeclaration(indexer.getSignal()).getSignalType()));
 				statement = new SetElementStatement(label, indexer.getSignal(),
 						expression.expression, expression.sensitivity, indexer.getPosition());
 			} else {
@@ -335,8 +336,8 @@ public class Parser {
 	}
 
 	private IndexerOperator parseAccess(String signal) {
-		if (table.containsSignal(signal)
-			&& table.getSignal(signal).getTypeOf() != Vector.class) {
+		if (table.containsSignal(signal) &&
+			table.getSignal(signal).getTypeOf() != Vector.class) {
 			throw new ParserException("Cannot index non vector signal.");
 		}
 
@@ -479,18 +480,18 @@ public class Parser {
 
 		lexer.nextToken();
 
-		if (declaration.getTypeOf() == LogicValue.class || !isTokenOfType(
-				TokenType.OPEN_PARENTHESES)) {
+		if (declaration.getTypeOf() == LogicValue.class ||
+			!isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 
 			if (declaration.getTypeOf() != signalDeclaration.getTypeOf()) {
 				throw new ParserException(
-						"Signal " + name + " is type of: " + declaration.getTypeOf()
-						+ ", expected " + signalDeclaration.getTypeOf() + ".");
+						"Signal " + name + " is type of: " + declaration.getTypeOf() +
+						", expected " + signalDeclaration.getTypeOf() + ".");
 			}
 
 			return new SignalExpression(name);
-		} else if (declaration.getTypeOf() == Vector.class && isTokenOfType(
-				TokenType.OPEN_PARENTHESES)) {
+		} else if (declaration.getTypeOf() == Vector.class &&
+				   isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 			lexer.nextToken();
 
 			checkType(TokenType.NUMBER, "Expected number as index.");
@@ -647,7 +648,7 @@ public class Parser {
 	private Map<String, SignalDeclaration> createStdSignals(
 			List<String> declarations, SignalDeclaration.Type type) {
 		Map<String, SignalDeclaration> signals = new LinkedHashMap<>();
-		SignalDeclaration stdLogic = new SignalDeclaration(type);
+		SignalDeclaration stdLogic = SignalDeclaration.getLogicDeclaration(type);
 		for (String id : declarations) {
 			table.addSignal(id, stdLogic);
 			signals.put(id, stdLogic);
@@ -697,7 +698,8 @@ public class Parser {
 		private boolean last;
 
 		public EntityLine(
-				Map<String, SignalDeclaration> signals, SignalDeclaration.Type type, boolean last) {
+				Map<String, SignalDeclaration> signals, SignalDeclaration.Type type,
+				boolean last) {
 			this.signals = signals;
 			this.last = last;
 		}

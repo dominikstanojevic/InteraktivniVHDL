@@ -33,11 +33,12 @@ public class Vector implements Value {
 	private int start;
 
 	public Vector(int start, Order order, int end) {
-		if (!((order == Order.TO && end > start) || (order == Order.DOWNTO && start > end))) {
+		if (!((order == Order.TO && end >= start) ||
+			  (order == Order.DOWNTO && start >= end))) {
 			throw new IllegalArgumentException("Vector size should be size 1 or bigger.");
 		}
 
-		values = new LogicValue[Math.abs(end - start)];
+		values = new LogicValue[Math.abs(end - start) + 1];
 		this.order = order;
 		this.start = start;
 		Arrays.fill(values, LogicValue.UNINITIALIZED);

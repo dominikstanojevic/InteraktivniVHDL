@@ -6,6 +6,7 @@ import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.Statement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class ArchitectureNode {
 	}
 
 	public Map<String, SignalDeclaration> getSignals() {
-		return signals;
+		return signals == null ? new HashMap<>() : signals;
 	}
 
 	public List<EntityMap> getMappedEntities() {

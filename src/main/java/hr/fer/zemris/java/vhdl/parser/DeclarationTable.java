@@ -62,7 +62,7 @@ public class DeclarationTable {
 	public List<String> getInputSignals() {
 		return signals.entrySet().stream()
 				.filter(e -> e.getValue().getSignalType() == SignalDeclaration.Type.IN)
-				.map(e -> e.getKey()).collect(Collectors.toList());
+				.map(Map.Entry::getKey).collect(Collectors.toList());
 	}
 
 	public Collection<SignalDeclaration> getSignals() {
@@ -70,10 +70,6 @@ public class DeclarationTable {
 	}
 
 	public boolean addLabel(String label) {
-		if (label == null) {
-			return true;
-		}
-
-		return labels.add(label);
+		return label == null || labels.add(label);
 	}
 }

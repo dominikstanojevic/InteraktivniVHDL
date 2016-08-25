@@ -30,7 +30,7 @@ public class Simulator {
 
 	public static void main(String[] args) throws IOException {
 		String program =
-				new String(Files.readAllBytes(Paths.get("sklop.txt")), StandardCharsets.UTF_8);
+				new String(Files.readAllBytes(Paths.get("test.txt")), StandardCharsets.UTF_8);
 
 		HierarchyBuilder hb =
 				new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());

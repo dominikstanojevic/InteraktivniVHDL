@@ -33,7 +33,7 @@ public class NotOperator extends UnaryOperator {
 		LogicValue[] result = new LogicValue[values.length];
 
 		for (int i = 0; i < values.length; i++) {
-			result[i] = this.values[values[i].ordinal()];
+			result[i] = NotOperator.values[values[i].ordinal()];
 		}
 
 		return new Vector(result);

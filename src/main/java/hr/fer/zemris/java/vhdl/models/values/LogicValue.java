@@ -24,11 +24,8 @@ public enum LogicValue implements Value {
 	};
 
 	private static boolean equals(LogicValue logicValue, Value value) {
-		if (!(value instanceof LogicValue)) {
-			return false;
-		}
+		return value instanceof LogicValue && value == logicValue;
 
-		return value == logicValue;
 	}
 
 	private String representation;

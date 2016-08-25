@@ -70,7 +70,7 @@ public class HierarchyBuilder {
 
 		table.addLabel("uut");
 		List<String> map =
-				testbenchSignals.entrySet().stream().map(declaration -> declaration.getKey())
+				testbenchSignals.entrySet().stream().map(Map.Entry::getKey)
 						.collect(Collectors.toList());
 		arch.addStatement(new PositionalMap("uut", component.getEntity().getName(), map));
 
@@ -92,8 +92,7 @@ public class HierarchyBuilder {
 		return testbenchSignals;
 	}
 
-	private void parseMappings(ProgramNode component, String label) {
-		createSignals(component.getArchitecture().getSignals(), label);
+	private void parseMappings(ProgramNode component, String label) {		createSignals(component.getArchitecture().getSignals(), label);
 
 		for (EntityMap map : component.getArchitecture().getMappedEntities()) {
 			ProgramNode entry;
