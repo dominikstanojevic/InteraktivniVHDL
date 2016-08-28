@@ -6,26 +6,10 @@ import java.util.NoSuchElementException;
  * Created by Dominik on 28.7.2016..
  */
 public enum LogicValue implements Value {
-	ZERO("0") {
-		@Override
-		public boolean equals(Value value) {
-			return LogicValue.equals(this, value);
-		}
-	}, ONE("1") {
-		@Override
-		public boolean equals(Value value) {
-			return LogicValue.equals(this, value);
-		}
-	}, UNINITIALIZED("U") {
-		@Override
-		public boolean equals(Value value) {
-			return LogicValue.equals(this, value);
-		}
-	};
+	ZERO("0"), ONE("1"), UNINITIALIZED("U");
 
-	private static boolean equals(LogicValue logicValue, Value value) {
-		return value instanceof LogicValue && value == logicValue;
-
+	public Value.TypeOf typeOf() {
+		return TypeOf.STD_LOGIC;
 	}
 
 	private String representation;

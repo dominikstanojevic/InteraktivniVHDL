@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.statements;
 
+import hr.fer.zemris.java.vhdl.models.declarable.Declarable;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
 import java.util.Set;
@@ -11,9 +12,9 @@ public class SetElementStatement extends SetStatement {
 	private int position;
 
 	public SetElementStatement(
-			String id, String signal, Expression expression, Set<String> sensitivity,
+			String id, Declarable declarable, Expression expression, Set<Declarable> sensitivity,
 			int position) {
-		super(id, signal, expression, sensitivity);
+		super(id, declarable, expression, sensitivity);
 		this.position = position;
 	}
 

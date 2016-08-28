@@ -7,23 +7,10 @@ import java.util.Objects;
  * Created by Dominik on 29.7.2016..
  */
 public class Vector implements Value {
+
 	@Override
-	public boolean equals(Value value) {
-		if (!(value instanceof Vector)) {
-			return false;
-		}
-
-		if (this.values.length != ((Vector) value).values.length) {
-			return false;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			if (!values[i].equals(((Vector) value).values[i])) {
-				return false;
-			}
-		}
-
-		return true;
+	public TypeOf typeOf() {
+		return TypeOf.STD_LOGIC_VECTOR;
 	}
 
 	public enum Order {TO, DOWNTO}
@@ -42,6 +29,17 @@ public class Vector implements Value {
 		this.order = order;
 		this.start = start;
 		Arrays.fill(values, LogicValue.UNINITIALIZED);
+	}
+
+	public static Vector createVector(char[] values) {
+		Objects.requireNonNull(values, "Values cannot be null");
+
+		LogicValue[] logicValues = new LogicValue[values.length];
+		for(int i = 0; i < logicValues.length; i++) {
+			logicValues[i] = LogicValue.getValue(values[i]);
+		}
+
+		return new Vector(logicValues);
 	}
 
 	public Vector(LogicValue[] logicValues) {
@@ -92,6 +90,36 @@ public class Vector implements Value {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Vector vector = (Vector) o;
+
+		if (start != vector.start) {
+			return false;
+		}
+		// Probably incorrect - comparing Object[] arrays with Arrays.equals
+		if (!Arrays.equals(values, vector.values)) {
+			return false;
+		}
+		return order == vector.order;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Arrays.hashCode(values);
+		result = 31 * result + order.hashCode();
+		result = 31 * result + start;
+		return result;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
@@ -102,5 +130,29 @@ public class Vector implements Value {
 		sb.append('"');
 
 		return sb.toString();
+	}
+
+	public static class VectorData {
+		private int start;
+		private Order order;
+		private int end;
+
+		public VectorData(int start, Order order, int end) {
+			this.start = start;
+			this.order = order;
+			this.end = end;
+		}
+
+		public int getStart() {
+			return start;
+		}
+
+		public Order getOrder() {
+			return order;
+		}
+
+		public int getEnd() {
+			return end;
+		}
 	}
 }

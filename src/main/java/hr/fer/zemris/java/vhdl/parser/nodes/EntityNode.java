@@ -1,16 +1,17 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalDeclaration;
+import hr.fer.zemris.java.vhdl.models.declarable.Port;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
-public class EntityNode  {
+public class EntityNode {
 	private String name;
-	private Map<String, SignalDeclaration> declarations;
+	private Set<Port> declarations;
 
 	public EntityNode(String name) {
 		this.name = name;
@@ -20,20 +21,20 @@ public class EntityNode  {
 		return name;
 	}
 
-	public void addSignals(Map<String, SignalDeclaration> declarations) {
-		if(this.declarations == null) {
-			this.declarations = new LinkedHashMap<>();
+	public void addSignals(Set<Port> declarations) {
+		if (this.declarations == null) {
+			this.declarations = new LinkedHashSet<>();
 		}
 
-		this.declarations.putAll(declarations);
+		this.declarations.addAll(declarations);
 	}
 
 	public int numberOfSignals() {
 		return declarations.size();
 	}
 
-	public Map<String, SignalDeclaration> getDeclarations() {
-		return declarations;
+	public Set<Port> getDeclarations() {
+		return declarations != null ? declarations : Collections.emptySet();
 	}
 
 	@Override

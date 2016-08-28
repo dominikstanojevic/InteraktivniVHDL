@@ -1,5 +1,7 @@
 package hr.fer.zemris.java.vhdl.models;
 
+import hr.fer.zemris.java.vhdl.models.declarable.Declarable;
+import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
@@ -25,10 +27,10 @@ public class SimulationStatement {
 	}
 
 	public boolean sensitiveForSignals(Table table, List<String> signals) {
-		Set<String> sensitivity = statement.getSensitivity();
+		Set<Declarable> sensitivity = statement.getSensitivity();
 
-		Optional<String> result = sensitivity.stream()
-				.filter(s -> signals.contains(table.getSignal(component, s)))
+		Optional<Declarable> result = sensitivity.stream()
+				.filter(s -> signals.contains(table.getSignal(component, s.getName()).getName()))
 				.findFirst();
 
 		return result.isPresent();
@@ -37,21 +39,22 @@ public class SimulationStatement {
 	public boolean execute(Table table) {
 		tempValue = statement.getExpression().evaluate(table, component);
 
-		return !tempValue.equals(table.getValueForSignal(component, statement.getSignal()));
+		return !tempValue.equals(table.getValueForSignal(component, statement.getDeclarable
+				().getName()));
 	}
 
 	public void assign(Table table) {
-		Value value = table.getValueForSignal(component, statement.getSignal());
+		Value value = table.getValueForSignal(component, statement.getDeclarable().getName());
 
 		if (statement instanceof SetElementStatement) {
 			((Vector) value).setLogicValue((LogicValue) tempValue,
 					((SetElementStatement) statement).getPosition());
 		} else {
-			table.setValueForSignal(component, statement.getSignal(), tempValue);
+			table.setValueForSignal(component, statement.getDeclarable().getName(), tempValue);
 		}
 	}
 
-	public String getSignal(Table table) {
-		return table.getSignal(component, statement.getSignal());
+	public Signal getSignal(Table table) {
+		return table.getSignal(component, statement.getDeclarable().getName());
 	}
 }

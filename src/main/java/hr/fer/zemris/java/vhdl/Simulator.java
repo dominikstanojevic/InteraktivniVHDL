@@ -1,11 +1,15 @@
 package hr.fer.zemris.java.vhdl;
 
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
+import hr.fer.zemris.java.vhdl.models.Component;
 import hr.fer.zemris.java.vhdl.models.SimulationStatement;
 import hr.fer.zemris.java.vhdl.models.Table;
+import hr.fer.zemris.java.vhdl.models.declarable.Signal;
+import hr.fer.zemris.java.vhdl.models.declarations.PortDeclaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
+import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.Vector;
 import hr.fer.zemris.java.vhdl.parser.Parser;
-import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,11 +25,11 @@ import java.util.stream.Collectors;
  */
 public class Simulator {
 	private Table table;
-	private ProgramNode tested;
+	private Component tested;
 
-	public Simulator(Table table, ProgramNode testedUnit) {
+	public Simulator(Table table) {
 		this.table = table;
-		this.tested = testedUnit;
+		this.tested = table.getTestedComponent();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -34,15 +38,16 @@ public class Simulator {
 
 		HierarchyBuilder hb =
 				new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
-		Simulator simulator = new Simulator(hb.getTable(), hb.getTested());
+		Simulator simulator = new Simulator(hb.getTable());
 
 		Scanner sc = new Scanner(System.in);
 
 		System.out.println("Input signals: ");
 
-		simulator.tested.getDeclarationTable().getInputSignals()
-				.forEach(s -> System.out.print(s + " "));
-		System.out.println();
+		simulator.tested.getPorts().stream()
+				.filter(e -> e.getDeclaration().getPortType() == PortDeclaration.Type.IN)
+				.forEach(e -> System.out
+						.println(e.getName() + ": type " + e.getDeclaration().getPortType()));
 
 		while (true) {
 			String line = sc.nextLine().trim();
@@ -50,19 +55,20 @@ public class Simulator {
 			simulator.calculate(signals, System.currentTimeMillis());
 
 			System.out.println("Current values");
-			simulator.table.getSignals()
-					.forEach((s, value) -> System.out.println(s + ": " + value));
+			simulator.table.getSignals().forEach(
+					(s, value) -> System.out.println(value + ": " + value.getValue()));
 		}
 	}
 
 	public void calculate(List<String> signals, long time) {
-		List<SimulationStatement> statements = table.getStatements().stream().filter(s -> s
-				.sensitiveForSignals(table, signals)).collect(Collectors.toList());
+		List<SimulationStatement> statements = table.getStatements().stream()
+				.filter(s -> s.sensitiveForSignals(table, signals))
+				.collect(Collectors.toList());
 
 		List<String> changed = new ArrayList<>();
 		statements.forEach(s -> {
-			if(s.execute(table)) {
-				changed.add(s.getSignal(table));
+			if (s.execute(table)) {
+				changed.add(s.getSignal(table).getName());
 			}
 		});
 		statements.forEach(s -> s.assign(table));
@@ -81,7 +87,12 @@ public class Simulator {
 			String[] data = signal.split(":");
 
 			String s = data[0].trim();
-			simulator.table.setValueForSignal("", s, LogicValue.getValue(data[1].trim().charAt(0)));
+			Signal sig = simulator.table.getSignal("", s);
+			if (sig.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC) {
+				sig.setValue(LogicValue.getValue(data[1].trim().charAt(0)));
+			} else {
+				sig.setValue(Vector.createVector(data[1].trim().toCharArray()));
+			}
 			signalsList.add("/" + s);
 		}
 

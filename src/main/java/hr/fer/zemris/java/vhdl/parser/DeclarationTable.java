@@ -1,21 +1,19 @@
 package hr.fer.zemris.java.vhdl.parser;
 
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalDeclaration;
+import hr.fer.zemris.java.vhdl.models.declarable.Declarable;
+import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by Dominik on 30.7.2016..
  */
 public class DeclarationTable {
 	private String entryName;
-	private Map<String, SignalDeclaration> signals;
+	private Map<String, Declarable> declarations;
 	private String archName;
 	private Set<String> labels = new HashSet<>();
 
@@ -27,24 +25,16 @@ public class DeclarationTable {
 		this.entryName = entryName;
 	}
 
-	public void addSignal(String signal, SignalDeclaration declaration) {
-		if (signals == null) {
-			signals = new HashMap<>();
+	public void addDeclaration(Declarable declarable) {
+		if (declarations == null) {
+			declarations = new HashMap<>();
 		}
 
-		if (signals.containsKey(signal)) {
-			throw new ParserException("SignalDeclaration " + signal + " already declared.");
+		if (declarations.containsKey(declarable.getName())) {
+			throw new ParserException("PortDeclaration " + declarable + " already declared.");
 		}
 
-		signals.put(signal, declaration);
-	}
-
-	public boolean containsSignal(String signal) {
-		return signals.containsKey(signal);
-	}
-
-	public SignalDeclaration getSignal(String signal) {
-		return signals.get(signal);
+		declarations.put(declarable.getName(), declarable);
 	}
 
 	public String getArchName() {
@@ -55,21 +45,19 @@ public class DeclarationTable {
 		this.archName = archName;
 	}
 
-	public SignalDeclaration getDeclaration(String signal) {
-		return signals.get(signal);
-	}
-
-	public List<String> getInputSignals() {
-		return signals.entrySet().stream()
-				.filter(e -> e.getValue().getSignalType() == SignalDeclaration.Type.IN)
-				.map(Map.Entry::getKey).collect(Collectors.toList());
-	}
-
-	public Collection<SignalDeclaration> getSignals() {
-		return signals.values();
-	}
-
 	public boolean addLabel(String label) {
 		return label == null || labels.add(label);
+	}
+
+	public boolean isDeclared(String name) {
+		return declarations.containsKey(name);
+	}
+
+	public Declaration getDeclaration(String name) {
+		return declarations.get(name).getDeclaration();
+	}
+
+	public Declarable getDeclarable(String name) {
+		return declarations.get(name);
 	}
 }
