@@ -1,0 +1,12 @@
+entity sklopI is port (
+   a,b: in std_logic;
+   f, test: out std_logic);
+end sklopI;
+
+architecture pon of sklopI is
+   signal pomocni: std_logic;
+begin
+   pomocni <= a and b;
+   f <= pomocni;
+   test <= pomocni;
+end pon;

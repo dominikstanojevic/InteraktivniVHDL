@@ -1,0 +1,10 @@
+ENTITY sklopNOR IS PORT(
+	a, b : IN STD_LOGIC;
+	f: OUT STD_LOGIC
+);
+END sklopNOR;
+
+architecture arch OF sklopNOR IS
+BEGIN
+	f <= a nor '1';
+END arch;
