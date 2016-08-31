@@ -1,6 +1,7 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary.AndOperator;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary.ConcatOperator;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary.NandOperator;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary.NorOperator;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary.OrOperator;
@@ -37,6 +38,8 @@ public class OperatorFactory {
 				return new XorOperator(first, second);
 			case "xnor":
 				return new XnorOperator(first, second);
+			case "&":
+				return new ConcatOperator(second, first);
 			default:
 				throw new IllegalArgumentException(
 						"No binary operator named " + name + " " + "exists.");

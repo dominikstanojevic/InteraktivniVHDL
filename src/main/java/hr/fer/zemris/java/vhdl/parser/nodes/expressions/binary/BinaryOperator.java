@@ -1,6 +1,7 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
 import hr.fer.zemris.java.vhdl.models.Table;
+import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
@@ -56,5 +57,10 @@ public abstract class BinaryOperator extends Expression {
 		}
 
 		return new Vector(result);
+	}
+
+	@Override
+	public Declaration getDeclaration() {
+		return first.getDeclaration();
 	}
 }

@@ -1,0 +1,15 @@
+ENTITY sklopOR IS PORT(
+	a, b : IN STD_LOGIC_VECTOR(0 to 1);
+	c, d : IN STD_LOGIC;
+	e : OUT STD_LOGIC;
+	f: OUT STD_LOGIC_VECTOR(0 TO 2)
+);
+END sklopOR;
+
+architecture arch OF sklopOR IS
+	signal pomocni: STD_LOGIC_VECTOR(0 TO 2);
+BEGIN
+	pomocni <= (a & c) or (b & d);
+	f <= pomocni;
+	e <= pomocni(1);
+END arch;

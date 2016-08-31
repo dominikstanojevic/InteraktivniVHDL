@@ -1,6 +1,7 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
 import hr.fer.zemris.java.vhdl.models.Table;
+import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 
 /**
@@ -8,4 +9,5 @@ import hr.fer.zemris.java.vhdl.models.values.Value;
  */
 public abstract class Expression {
 	public abstract Value evaluate(Table table, String label);
+	public abstract Declaration getDeclaration();
 }

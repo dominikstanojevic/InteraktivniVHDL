@@ -34,7 +34,7 @@ public class Simulator {
 
 	public static void main(String[] args) throws IOException {
 		String program =
-				new String(Files.readAllBytes(Paths.get("test.txt")), StandardCharsets.UTF_8);
+				new String(Files.readAllBytes(Paths.get("test2.txt")), StandardCharsets.UTF_8);
 
 		HierarchyBuilder hb =
 				new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
@@ -51,7 +51,7 @@ public class Simulator {
 		simulator.tested.getPorts().stream()
 				.filter(e -> e.getDeclaration().getPortType() == PortDeclaration.Type.IN)
 				.forEach(e -> System.out
-						.println(e.getName() + ": type " + e.getDeclaration().getPortType()));
+						.println(e.getName() + ": type " + e.getDeclaration().getTypeOf()));
 
 		while (true) {
 			String line = sc.nextLine().trim();

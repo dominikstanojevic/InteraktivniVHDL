@@ -25,4 +25,5 @@ public interface Value {
 
 	TypeOf typeOf();
 	SignalDeclaration getDeclaration();
+	LogicValue[] getValues();
 }

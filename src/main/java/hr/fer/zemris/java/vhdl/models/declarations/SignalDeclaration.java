@@ -42,6 +42,10 @@ public class SignalDeclaration implements Declaration {
 
 	@Override
 	public int size() {
+		if(typeOf == Value.TypeOf.STD_LOGIC) {
+			return 1;
+		}
+
 		return Math.abs(end - start) + 1;
 	}
 
@@ -60,5 +64,38 @@ public class SignalDeclaration implements Declaration {
 
 	public Integer getEnd() {
 		return end;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		SignalDeclaration that = (SignalDeclaration) o;
+
+		if (typeOf != that.typeOf) {
+			return false;
+		}
+		if (start != null ? !start.equals(that.start) : that.start != null) {
+			return false;
+		}
+		if (order != that.order) {
+			return false;
+		}
+		return end != null ? end.equals(that.end) : that.end == null;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = typeOf.hashCode();
+		result = 31 * result + (start != null ? start.hashCode() : 0);
+		result = 31 * result + (order != null ? order.hashCode() : 0);
+		result = 31 * result + (end != null ? end.hashCode() : 0);
+		return result;
 	}
 }

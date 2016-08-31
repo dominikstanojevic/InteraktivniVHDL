@@ -2,6 +2,8 @@ package hr.fer.zemris.java.vhdl.models.values;
 
 import hr.fer.zemris.java.vhdl.models.declarations.SignalDeclaration;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -35,6 +37,18 @@ public enum LogicValue implements Value {
 
 	public SignalDeclaration getDeclaration() {
 		return SignalDeclaration.getLogicDeclaration();
+	}
+
+	private static Map<LogicValue,LogicValue[]> values = new HashMap<>();
+	static {
+		values.put(UNINITIALIZED, new LogicValue[]{UNINITIALIZED});
+		values.put(ZERO, new LogicValue[]{ZERO});
+		values.put(ONE, new LogicValue[]{ONE});
+	}
+
+	@Override
+	public LogicValue[] getValues() {
+		return values.get(this);
 	}
 
 	@Override

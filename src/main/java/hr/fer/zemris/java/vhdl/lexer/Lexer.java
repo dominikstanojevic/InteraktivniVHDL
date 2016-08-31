@@ -43,6 +43,7 @@ public class Lexer {
 		operators.add("nor");
 		operators.add("not");
 		operators.add("xnor");
+		operators.add("&");
 	}
 
 	private static final Set<String> keywords = new HashSet<>();
@@ -86,7 +87,7 @@ public class Lexer {
 	}
 
 	public void seek(Token token) {
-		if(tokens.contains(token)) {
+		if (tokens.contains(token)) {
 			position = tokens.indexOf(token);
 		}
 	}
@@ -108,7 +109,7 @@ public class Lexer {
 			return;
 		}
 
-		if (Character.isLetter(data[currPos])) {
+		if (Character.isLetter(data[currPos]) || data[currPos] == '&') {
 			scanIdent();
 			return;
 		}
@@ -218,6 +219,11 @@ public class Lexer {
 
 	private void scanIdent() {
 		int startIndex = currPos;
+
+		if (data[currPos++] == '&') {
+			tokens.add(new Token(TokenType.OPERATORS, "&"));
+			return;
+		}
 
 		while (currPos < data.length && isWordCharacter(data[currPos])) {
 			currPos++;

@@ -27,6 +27,24 @@ public class Vector implements Value {
 		return new SignalDeclaration(start, order, end);
 	}
 
+	@Override
+	public LogicValue[] getValues() {
+		return Arrays.copyOf(values, values.length);
+	}
+
+	public static Value concat(Value first, Value second) {
+		int size = first.getDeclaration().size() + second.getDeclaration().size();
+		LogicValue[] values = new LogicValue[size];
+
+		LogicValue[] firstValues = first.getValues();
+		LogicValue[] secondValues = second.getValues();
+
+		System.arraycopy(firstValues, 0, values, 0, firstValues.length);
+		System.arraycopy(secondValues, 0, values, firstValues.length, secondValues.length);
+
+		return new Vector(values);
+	}
+
 	public enum Order {TO, DOWNTO}
 
 	private LogicValue[] values;

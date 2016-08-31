@@ -444,6 +444,11 @@ public class Parser {
 			popOperator(operands, operators);
 		}
 
+		while (!operators.empty() && operators.peek().equals("&") &&
+			   !(operator.equals("(") || operator.equals("not"))) {
+			popOperator(operands, operators);
+		}
+
 		if (!operators.empty()) {
 			checkOperatorsOrder(operators.peek(), operator);
 		}
@@ -456,11 +461,11 @@ public class Parser {
 			Declaration portDeclaration) {
 		if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
 			Constant constant = new Constant((Value) currentValue());
-			if(constant.getDeclaration().getTypeOf() != portDeclaration.getTypeOf()) {
+			if (constant.getDeclaration().getTypeOf() != portDeclaration.getTypeOf()) {
 				throw new ParserException("Invalid type for constant.");
 			}
-			if(constant.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR &&
-			   constant.getDeclaration().size() != portDeclaration.size()) {
+			if (constant.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR &&
+				constant.getDeclaration().size() != portDeclaration.size()) {
 				throw new ParserException("Constant vector is not valid size.");
 			}
 
@@ -468,7 +473,14 @@ public class Parser {
 			lexer.nextToken();
 		} else if (isTokenOfType(TokenType.IDENT)) {
 			SignalExpression e = parseSignal();
-			checkIfValid(e, portDeclaration);
+
+			Declaration d = e.getDeclaration();
+			if (d instanceof PortDeclaration &&
+				((PortDeclaration) d).getPortType() == PortDeclaration.Type.OUT) {
+				throw new ParserException(
+						"Only IN ports can exist on the right side of the " + "expression.");
+			}
+
 			sensitivity.add(e.getId());
 			operands.push(e);
 		} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
