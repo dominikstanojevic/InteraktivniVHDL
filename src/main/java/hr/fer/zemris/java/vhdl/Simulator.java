@@ -39,6 +39,10 @@ public class Simulator {
 		HierarchyBuilder hb =
 				new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
 		Simulator simulator = new Simulator(hb.getTable());
+		simulator.table.getStatements().forEach(s -> {
+			s.execute(simulator.table);
+			s.assign(simulator.table);
+		});
 
 		Scanner sc = new Scanner(System.in);
 
@@ -69,9 +73,10 @@ public class Simulator {
 		statements.forEach(s -> {
 			if (s.execute(table)) {
 				changed.add(s.getSignal(table).getName());
+				s.assign(table);
 			}
 		});
-		statements.forEach(s -> s.assign(table));
+
 
 		if (changed.size() != 0) {
 			calculate(changed, time);

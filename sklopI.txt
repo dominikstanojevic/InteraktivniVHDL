@@ -1,6 +1,6 @@
 entity sklopI is port (
    a,b: in std_logic;
-   f: out std_logic);
+   f, test: out std_logic);
 end sklopI;
 
 architecture pon of sklopI is
@@ -8,4 +8,5 @@ architecture pon of sklopI is
 begin
    pomocni <= a and b;
    f <= pomocni;
+   test <= pomocni;
 end pon;

@@ -1,5 +1,7 @@
 package hr.fer.zemris.java.vhdl.models.values;
 
+import hr.fer.zemris.java.vhdl.models.declarations.SignalDeclaration;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -11,6 +13,18 @@ public class Vector implements Value {
 	@Override
 	public TypeOf typeOf() {
 		return TypeOf.STD_LOGIC_VECTOR;
+	}
+
+	@Override
+	public SignalDeclaration getDeclaration() {
+		int end;
+		if(order == Order.TO) {
+			end = start + values.length - 1;
+		} else {
+			end = start - values.length + 1;
+		}
+
+		return new SignalDeclaration(start, order, end);
 	}
 
 	public enum Order {TO, DOWNTO}

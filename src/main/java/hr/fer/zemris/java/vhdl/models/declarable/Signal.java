@@ -22,6 +22,12 @@ public class Signal implements Declarable<SignalDeclaration> {
 		this.declaration = declaration;
 	}
 
+	public Signal(Value value) {
+		this.label = value.toString();
+		this.declaration = value.getDeclaration();
+		this.value = value;
+	}
+
 	public Signal createValue(String label) {
 		if (value == null) {
 			Signal newSignal = new Signal(label + "/" + this.label, declaration);

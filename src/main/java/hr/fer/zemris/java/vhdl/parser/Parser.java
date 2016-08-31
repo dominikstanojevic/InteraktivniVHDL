@@ -256,7 +256,11 @@ public class Parser {
 		lexer.nextToken();
 
 		Token token = lexer.getCurrentToken();
-		Mappable test = parseSignal();
+		if (!(isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR))) {
+			Mappable test = parseSignal();
+		} else {
+			lexer.nextToken();
+		}
 
 		EntityMap map;
 		if (isTokenOfType(TokenType.COMMA)) {
@@ -289,9 +293,13 @@ public class Parser {
 			checkType(TokenType.MAP, "Association operator expected");
 			lexer.nextToken();
 
-			String signal2 = (String) currentValue();
-			if (signal2.equals("open")) {
+			if (isTokenOfType(TokenType.KEYWORD) && (currentValue()).equals("open")) {
 				signals.put(signal1, null);
+				lexer.nextToken();
+			} else if (isTokenOfType(TokenType.CONSTANT) ||
+					   isTokenOfType(TokenType.CONSTANT_VECTOR)) {
+				signals.put(signal1, new Constant((Value) currentValue()));
+				lexer.nextToken();
 			} else {
 				signals.put(signal1, parseSignal());
 			}
@@ -314,9 +322,13 @@ public class Parser {
 		List<Mappable> signals = new ArrayList<>();
 
 		while (true) {
-			String signal = (String) currentValue();
-			if (signal.equals("open")) {
+			if (isTokenOfType(TokenType.KEYWORD) && (currentValue()).equals("open")) {
 				signals.add(null);
+				lexer.nextToken();
+			} else if (isTokenOfType(TokenType.CONSTANT) ||
+					   isTokenOfType(TokenType.CONSTANT_VECTOR)) {
+				signals.add(new Constant((Value) currentValue()));
+				lexer.nextToken();
 			} else {
 				signals.add(parseSignal());
 			}
@@ -443,7 +455,16 @@ public class Parser {
 			Stack<Expression> operands, Stack<String> operators, Set<Declarable> sensitivity,
 			Declaration portDeclaration) {
 		if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
-			operands.push(new Constant((Value) currentValue()));
+			Constant constant = new Constant((Value) currentValue());
+			if(constant.getDeclaration().getTypeOf() != portDeclaration.getTypeOf()) {
+				throw new ParserException("Invalid type for constant.");
+			}
+			if(constant.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR &&
+			   constant.getDeclaration().size() != portDeclaration.size()) {
+				throw new ParserException("Constant vector is not valid size.");
+			}
+
+			operands.push(constant);
 			lexer.nextToken();
 		} else if (isTokenOfType(TokenType.IDENT)) {
 			SignalExpression e = parseSignal();

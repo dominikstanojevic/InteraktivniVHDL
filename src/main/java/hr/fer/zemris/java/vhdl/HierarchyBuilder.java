@@ -18,7 +18,9 @@ import hr.fer.zemris.java.vhdl.parser.Parser;
 import hr.fer.zemris.java.vhdl.parser.nodes.ArchitectureNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.EntityNode;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Constant;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalExpression;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary.IndexerOperator;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +50,7 @@ public class HierarchyBuilder {
 	public HierarchyBuilder(ProgramNode component) {
 		Objects.requireNonNull(component, "Entity cannot be null");
 
-		table = new Table(component.getEntity().getName());
+		table = new Table();
 
 		ProgramNode testbenchNode = createTestbench(component);
 		entities.put(testbenchNode.getEntity().getName(), testbenchNode);
@@ -121,7 +123,7 @@ public class HierarchyBuilder {
 	private List<SimulationStatement> addStatements(ProgramNode component, String name) {
 		List<SimulationStatement> statements = new ArrayList<>();
 		component.getArchitecture().getStatements().forEach(s -> {
-			SimulationStatement statement = new SimulationStatement(name, s);
+			SimulationStatement statement = new SimulationStatement(name, s, table);
 			statements.add(statement);
 			table.addStatement(statement);
 		});
@@ -166,6 +168,8 @@ public class HierarchyBuilder {
 
 		Set<Port> ports = mappedEntry.getEntity().getDeclarations();
 		for (Port port : ports) {
+			String alias = label + "/" + mapping.getLabel() + "/" + port.getName();
+
 			//String name = port.getKey().getName();
 			if (!mapping.isMapped(port)) {
 				throw new RuntimeException("Signal " + port.getName() + "is not mapped.");
@@ -180,12 +184,23 @@ public class HierarchyBuilder {
 				throw new RuntimeException("Only in ports may be associate with expression.");
 			}
 
+			if (mappedTo instanceof Constant) {
+				Signal signal = new Signal(((Constant) mappedTo).getValue());
+				table.addSignal(signal);
+				table.addAlias(alias, signal.getName(), null);
+				continue;
+			}
+
 			if (!Declaration.checkMapping(port.getDeclaration(), mappedToDeclaration)) {
 				throw new RuntimeException("Signals are not compatibile.");
 			}
 
-			String alias = label + "/" + mapping.getLabel() + "/" + port.getName();
-			table.addAlias(alias, label + "/" + mappedTo.getName());
+			Integer position = null;
+			if (mappedTo instanceof IndexerOperator) {
+				position = ((IndexerOperator) mappedTo).getPosition();
+			}
+
+			table.addAlias(alias, label + "/" + mappedTo.getName(), position);
 		}
 	}
 
@@ -196,6 +211,13 @@ public class HierarchyBuilder {
 		List<Port> declared = new ArrayList<>(mappedEntry.getEntity().getDeclarations());
 
 		for (int i = 0; i < signals.size(); i++) {
+			String alias = label + "/" + mapping.getLabel() + "/" + declared.get(i).getName();
+
+			if (signals.get(i) == null) {
+				//table.addAlias(alias, null, null);
+				continue;
+			}
+
 			Declaration declaration = signals.get(i).getDeclaration();
 
 			if (!(signals.get(i) instanceof SignalExpression) &&
@@ -203,12 +225,23 @@ public class HierarchyBuilder {
 				throw new RuntimeException("Only in ports may be associate with expression.");
 			}
 
+			if (signals.get(i) instanceof Constant) {
+				Signal signal = new Signal(((Constant) signals.get(i)).getValue());
+				table.addSignal(signal);
+				table.addAlias(alias, signal.getName(), null);
+				continue;
+			}
+
 			if (!Declaration.checkMapping(declared.get(i).getDeclaration(), declaration)) {
 				throw new RuntimeException("Signals are not compatibile.");
 			}
 
-			String alias = label + "/" + mapping.getLabel() + "/" + declared.get(i).getName();
-			table.addAlias(alias, label + "/" + signals.get(i).getName());
+			Integer position = null;
+			if (signals.get(i) instanceof IndexerOperator) {
+				position = ((IndexerOperator) signals.get(i)).getPosition();
+			}
+
+			table.addAlias(alias, label + "/" + signals.get(i).getName(), position);
 		}
 	}
 

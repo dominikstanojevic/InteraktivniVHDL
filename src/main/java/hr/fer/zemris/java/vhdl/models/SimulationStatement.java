@@ -19,11 +19,16 @@ public class SimulationStatement {
 	private String component;
 	private Value tempValue;
 	private SetStatement statement;
+	private Table table;
+	private boolean isOpen;
 
 	public SimulationStatement(
-			String component, SetStatement statement) {
+			String component, SetStatement statement, Table table) {
 		this.component = component;
 		this.statement = statement;
+		this.table = table;
+
+		isOpen = !table.containsSignal(component, statement.getDeclarable().getName());
 	}
 
 	public boolean sensitiveForSignals(Table table, List<String> signals) {
@@ -39,18 +44,27 @@ public class SimulationStatement {
 	public boolean execute(Table table) {
 		tempValue = statement.getExpression().evaluate(table, component);
 
+		if(isOpen) {
+			return false;
+		}
+
 		return !tempValue.equals(table.getValueForSignal(component, statement.getDeclarable
 				().getName()));
 	}
 
 	public void assign(Table table) {
+		if(isOpen) {
+			return;
+		}
+
 		Value value = table.getValueForSignal(component, statement.getDeclarable().getName());
 
 		if (statement instanceof SetElementStatement) {
 			((Vector) value).setLogicValue((LogicValue) tempValue,
 					((SetElementStatement) statement).getPosition());
 		} else {
-			table.setValueForSignal(component, statement.getDeclarable().getName(), tempValue);
+			table.setValueForSignal(component, statement.getDeclarable().getName(),
+					tempValue);
 		}
 	}
 

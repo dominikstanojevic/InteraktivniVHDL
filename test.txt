@@ -8,8 +8,8 @@ END Test;
 architecture arch OF Test IS
 	signal pomocni: STD_LOGIC_VECTOR(0 TO 1);
 BEGIN
-mapiranje: ENTITY work.sklopI port map (a(0), a(1), pomocni(0));
-mapiranje2: ENTITY work.sklopNOR port map (a => a(0), b => a(1), f => pomocni(1));
+mapiranje: ENTITY work.sklopI port map ('1', a(1), pomocni(0), open);
+mapiranje2: ENTITY work.sklopNOR port map (a => '1', b => a(1), f => pomocni(1));
 mapiranje3: ENTITY work.sklopOR port map (pomocni(0), pomocni(1), q);
 END arch;
 	

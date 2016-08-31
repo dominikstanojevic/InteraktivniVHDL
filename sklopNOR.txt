@@ -6,5 +6,5 @@ END sklopNOR;
 
 architecture arch OF sklopNOR IS
 BEGIN
-	f <= a nor b;
+	f <= a nor '1';
 END arch;

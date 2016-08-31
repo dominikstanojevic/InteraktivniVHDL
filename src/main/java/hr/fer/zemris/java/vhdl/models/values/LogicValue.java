@@ -1,5 +1,7 @@
 package hr.fer.zemris.java.vhdl.models.values;
 
+import hr.fer.zemris.java.vhdl.models.declarations.SignalDeclaration;
+
 import java.util.NoSuchElementException;
 
 /**
@@ -29,6 +31,10 @@ public enum LogicValue implements Value {
 			default:
 				throw new NoSuchElementException("Invalid character for logic value.");
 		}
+	}
+
+	public SignalDeclaration getDeclaration() {
+		return SignalDeclaration.getLogicDeclaration();
 	}
 
 	@Override
