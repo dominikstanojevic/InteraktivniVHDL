@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.models;
 
+import hr.fer.zemris.java.vhdl.models.components.Component;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominik on 22.8.2016..
@@ -105,5 +107,10 @@ public class Table {
 
 	public Component getTestedComponent() {
 		return component.getChildren().get(0);
+	}
+
+	public List<SimulationStatement> getStatementsForSignal(Signal signal) {
+		return statements.stream().filter(s -> s.sensitiveForSignal(this, signal))
+				.collect(Collectors.toList());
 	}
 }

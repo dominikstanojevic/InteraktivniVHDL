@@ -13,8 +13,8 @@ public class SetElementStatement extends SetStatement {
 
 	public SetElementStatement(
 			String id, Declarable declarable, Expression expression, Set<Declarable> sensitivity,
-			int position) {
-		super(id, declarable, expression, sensitivity);
+			int position, long delay) {
+		super(id, declarable, expression, sensitivity, delay);
 		this.position = position;
 	}
 

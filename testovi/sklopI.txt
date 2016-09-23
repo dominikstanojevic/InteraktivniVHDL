@@ -6,7 +6,7 @@ end sklopI;
 architecture pon of sklopI is
    signal pomocni: std_logic;
 begin
-   pomocni <= a and b;
-   f <= pomocni;
-   test <= pomocni;
+   pomocni <= a and b after 10 s;
+   f <= pomocni after 100 ms;
+   test <= pomocni after 5 s;
 end pon;

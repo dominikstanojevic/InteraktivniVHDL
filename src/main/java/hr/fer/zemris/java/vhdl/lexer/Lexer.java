@@ -66,6 +66,7 @@ public class Lexer {
 		keywords.add("work");
 		keywords.add("map");
 		keywords.add("open");
+		keywords.add("after");
 	}
 
 	public Lexer(String program) {

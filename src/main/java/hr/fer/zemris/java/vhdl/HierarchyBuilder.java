@@ -1,9 +1,9 @@
 package hr.fer.zemris.java.vhdl;
 
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
-import hr.fer.zemris.java.vhdl.models.Component;
 import hr.fer.zemris.java.vhdl.models.SimulationStatement;
 import hr.fer.zemris.java.vhdl.models.Table;
+import hr.fer.zemris.java.vhdl.models.components.Component;
 import hr.fer.zemris.java.vhdl.models.declarable.Port;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
@@ -72,7 +72,7 @@ public class HierarchyBuilder {
 		table.setArchName("arch");
 
 		table.addLabel("uut");
-		List<Mappable> map = testbenchSignals.stream().map(e -> new SignalExpression(e))
+		List<Mappable> map = testbenchSignals.stream().map(SignalExpression::new)
 				.collect(Collectors.toList());
 		arch.addStatement(new PositionalMap("uut", component.getEntity().getName(), map));
 
@@ -149,9 +149,9 @@ public class HierarchyBuilder {
 		checkSize(mapping, entry, mappedEntry);
 
 		if (mapping instanceof PositionalMap) {
-			checkPositionalMapping((PositionalMap) mapping, entry, mappedEntry, label);
+			checkPositionalMapping((PositionalMap) mapping, mappedEntry, label);
 		} else {
-			checkAssociativeMapping((AssociativeMap) mapping, entry, mappedEntry, label);
+			checkAssociativeMapping((AssociativeMap) mapping, mappedEntry, label);
 		}
 	}
 
@@ -164,7 +164,7 @@ public class HierarchyBuilder {
 	}
 
 	private void checkAssociativeMapping(
-			AssociativeMap mapping, ProgramNode entry, ProgramNode mappedEntry, String label) {
+			AssociativeMap mapping, ProgramNode mappedEntry, String label) {
 
 		Set<Port> ports = mappedEntry.getEntity().getDeclarations();
 		for (Port port : ports) {
@@ -205,7 +205,7 @@ public class HierarchyBuilder {
 	}
 
 	private void checkPositionalMapping(
-			PositionalMap mapping, ProgramNode entry, ProgramNode mappedEntry, String label) {
+			PositionalMap mapping, ProgramNode mappedEntry, String label) {
 
 		List<Mappable> signals = mapping.getSignals();
 		List<Port> declared = new ArrayList<>(mappedEntry.getEntity().getDeclarations());
@@ -247,7 +247,7 @@ public class HierarchyBuilder {
 
 	private String getEntry(String name) {
 		try {
-			return new String(Files.readAllBytes(Paths.get(name + ".txt")),
+			return new String(Files.readAllBytes(Paths.get("testovi/" + name + ".txt")),
 					StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading file: " + name + ".");

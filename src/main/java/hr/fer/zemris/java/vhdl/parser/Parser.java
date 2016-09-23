@@ -205,7 +205,7 @@ public class Parser {
 				ExpressionData expression = parseExpression(portDeclaration);
 				statement =
 						new SetStatement(label, table.getDeclarable(id), expression.expression,
-								expression.sensitivity);
+								expression.sensitivity, expression.delay);
 			} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 				IndexerOperator indexer = parseAccess(id);
 
@@ -216,7 +216,7 @@ public class Parser {
 						parseExpression(SignalDeclaration.getLogicDeclaration());
 				statement =
 						new SetElementStatement(label, indexer.getId(), expression.expression,
-								expression.sensitivity, indexer.getPosition());
+								expression.sensitivity, indexer.getPosition(), expression.delay);
 			} else {
 				throw new ParserException("Expected signal or signal vector.");
 			}
@@ -403,6 +403,12 @@ public class Parser {
 
 		expression(operands, operators, sensitivity, portDeclaration);
 
+		long delay = 0;
+		if(isTokenOfType(TokenType.KEYWORD) && currentValue().equals("after")) {
+			lexer.nextToken();
+			delay = readDelay();
+		}
+
 		checkType(TokenType.SEMICOLON, "; expected");
 		lexer.nextToken();
 
@@ -410,7 +416,28 @@ public class Parser {
 			throw new ParserException("Expression is not valid.");
 		}
 
-		return new ExpressionData(operands.pop(), sensitivity);
+		return new ExpressionData(operands.pop(), sensitivity, delay);
+	}
+
+	private long readDelay() {
+		checkType(TokenType.NUMBER, "Number expected");
+		int number = (int) currentValue();
+		lexer.nextToken();
+
+		checkType(TokenType.IDENT, "Identifier for time unit expected.");
+		String unit = (String) currentValue();
+
+		long delay;
+		if(unit.equals("ms")) {
+			delay = number;
+		} else if (unit.equals("s")) {
+			delay = number * 1000;
+		} else {
+			throw new ParserException("Invalid time unit given.");
+		}
+		lexer.nextToken();
+
+		return delay;
 	}
 
 	private void expression(
@@ -746,6 +773,10 @@ public class Parser {
 			return;
 		}
 
+		if (first.equals("&") || second.equals("&")) {
+			return;
+		}
+
 		if (first.equals("not") && second.equals("not")) {
 			throwOperatorsException(first, second);
 		}
@@ -782,11 +813,13 @@ public class Parser {
 	private static class ExpressionData {
 		private Expression expression;
 		private Set<Declarable> sensitivity;
+		private long delay;
 
 		public ExpressionData(
-				Expression expression, Set<Declarable> sensitivity) {
+				Expression expression, Set<Declarable> sensitivity, long delay) {
 			this.expression = expression;
 			this.sensitivity = sensitivity;
+			this.delay = delay;
 		}
 	}
 }

@@ -45,6 +45,10 @@ public class Vector implements Value {
 		return new Vector(values);
 	}
 
+	public void setValue(Vector value) {
+		this.values = value.values;
+	}
+
 	public enum Order {TO, DOWNTO}
 
 	private LogicValue[] values;
@@ -98,7 +102,7 @@ public class Vector implements Value {
 
 	public void setLogicValue(LogicValue value, int position) {
 		Objects.requireNonNull(value, "Value should not be null.");
-		checkPosition(position);
+		position = checkPosition(position);
 
 		values[position] = value;
 	}

@@ -1,5 +1,6 @@
-package hr.fer.zemris.java.vhdl.models;
+package hr.fer.zemris.java.vhdl.models.components;
 
+import hr.fer.zemris.java.vhdl.models.SimulationStatement;
 import hr.fer.zemris.java.vhdl.models.declarable.Port;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 

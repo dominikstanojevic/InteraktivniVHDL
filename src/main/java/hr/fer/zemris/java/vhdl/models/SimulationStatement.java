@@ -8,7 +8,6 @@ import hr.fer.zemris.java.vhdl.models.values.Vector;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetElementStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,23 +18,21 @@ public class SimulationStatement {
 	private String component;
 	private Value tempValue;
 	private SetStatement statement;
-	private Table table;
 	private boolean isOpen;
 
 	public SimulationStatement(
 			String component, SetStatement statement, Table table) {
 		this.component = component;
 		this.statement = statement;
-		this.table = table;
 
 		isOpen = !table.containsSignal(component, statement.getDeclarable().getName());
 	}
 
-	public boolean sensitiveForSignals(Table table, List<String> signals) {
+	public boolean sensitiveForSignal(Table table, Signal signal) {
 		Set<Declarable> sensitivity = statement.getSensitivity();
 
 		Optional<Declarable> result = sensitivity.stream()
-				.filter(s -> signals.contains(table.getSignal(component, s.getName()).getName()))
+				.filter(s -> signal.equals((table.getSignal(component, s.getName()))))
 				.findFirst();
 
 		return result.isPresent();
@@ -44,16 +41,16 @@ public class SimulationStatement {
 	public boolean execute(Table table) {
 		tempValue = statement.getExpression().evaluate(table, component);
 
-		if(isOpen) {
+		if (isOpen) {
 			return false;
 		}
 
-		return !tempValue.equals(table.getValueForSignal(component, statement.getDeclarable
-				().getName()));
+		return !tempValue.equals(table
+				.getValueForSignal(component, statement.getDeclarable().getName()));
 	}
 
 	public void assign(Table table) {
-		if(isOpen) {
+		if (isOpen) {
 			return;
 		}
 
@@ -63,12 +60,15 @@ public class SimulationStatement {
 			((Vector) value).setLogicValue((LogicValue) tempValue,
 					((SetElementStatement) statement).getPosition());
 		} else {
-			table.setValueForSignal(component, statement.getDeclarable().getName(),
-					tempValue);
+			table.setValueForSignal(component, statement.getDeclarable().getName(), tempValue);
 		}
 	}
 
 	public Signal getSignal(Table table) {
 		return table.getSignal(component, statement.getDeclarable().getName());
+	}
+
+	public long getDelay() {
+		return statement.getDelay();
 	}
 }

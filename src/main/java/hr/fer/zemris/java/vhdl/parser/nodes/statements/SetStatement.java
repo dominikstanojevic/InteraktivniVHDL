@@ -13,9 +13,11 @@ public class SetStatement extends Statement {
 	private Declarable declarable;
 	private Expression expression;
 	private Set<Declarable> sensitivity;
+	private long delay;
 
 	public SetStatement(
-			String label, Declarable declarable, Expression expression, Set<Declarable> sensitivity) {
+			String label, Declarable declarable, Expression expression, Set<Declarable>
+			sensitivity, long delay) {
 		super(label);
 
 		Objects.requireNonNull(declarable, "PortDeclaration cannot be null");
@@ -24,6 +26,7 @@ public class SetStatement extends Statement {
 		this.declarable = declarable;
 		this.expression = expression;
 		this.sensitivity = sensitivity;
+		this.delay = delay;
 	}
 
 	public Declarable getDeclarable() {
@@ -36,5 +39,9 @@ public class SetStatement extends Statement {
 
 	public Set<Declarable> getSensitivity() {
 		return sensitivity;
+	}
+
+	public long getDelay() {
+		return delay;
 	}
 }

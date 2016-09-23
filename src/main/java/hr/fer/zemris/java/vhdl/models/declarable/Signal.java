@@ -51,9 +51,11 @@ public class Signal implements Declarable<SignalDeclaration> {
 			if(((Vector) value).length() != ((Vector) this.value).length()) {
 				throw new RuntimeException("Illegal size for signal: " + label);
 			}
-		}
 
-		this.value = value;
+			((Vector) this.value).setValue((Vector) value);
+		} else {
+			this.value = value;
+		}
 	}
 
 	@Override
