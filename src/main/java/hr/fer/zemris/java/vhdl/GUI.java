@@ -109,7 +109,7 @@ public class GUI extends JFrame implements IModelListener {
 			}
 		});
 	}
-	
+
 	@Override
 	public void signalChanged(Signal signal, long time) {
 		blackBox.repaint();
