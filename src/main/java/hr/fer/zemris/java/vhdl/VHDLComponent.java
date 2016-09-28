@@ -28,13 +28,12 @@ public class VHDLComponent extends JComponent {
 	private List<Input> inputs = new ArrayList<>();
 	private List<Input> outputs = new ArrayList<>();
 
-	private static final int WIDTH = 600;
+	private int width = 600;
 	private int height;
 
-	private static final int CONNECTOR_SPACING = 10;
-	private static final int SPACING = 25;
+	private int connectorSpacing = 10;
+	private int spacing = 25;
 
-	private static final int WIRE_LENGTH = 50;
 
 	public VHDLComponent(Component component) {
 		this.component = component;
@@ -47,7 +46,7 @@ public class VHDLComponent extends JComponent {
 		int numberOfOutputs = component.numberOfOutputs();
 
 		int max = Math.max(numberOfInputs, numberOfOutputs);
-		height = max * (Input.HEIGHT + CONNECTOR_SPACING) + CONNECTOR_SPACING + 6 * SPACING;
+		height = max * (Input.HEIGHT + connectorSpacing) + connectorSpacing + 6 * spacing;
 
 		initInputs(numberOfInputs);
 		initOutputs(numberOfOutputs);
@@ -56,11 +55,10 @@ public class VHDLComponent extends JComponent {
 	private void initOutputs(int numberOfOutputs) {
 		List<Signal> outputs = component.getOutputSignals();
 
-		int boxYStart = getInsets().top + SPACING;
-		int boxHeight = (getHeight() - getInsets().bottom - SPACING) - boxYStart;
+		int boxHeight = height - 2 * spacing;
 		int heightPerInput = boxHeight / (numberOfOutputs + 1);
 
-		int startHeight = getInsets().top + SPACING + heightPerInput;
+		int startHeight = getInsets().top + spacing + heightPerInput;
 		for (Signal output : outputs) {
 			if (output.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR) {
 				Map<Integer, LogicValue> values =
@@ -79,11 +77,10 @@ public class VHDLComponent extends JComponent {
 	private void initInputs(int numberOfInputs) {
 		List<Signal> inputs = component.getInputSignals();
 
-		int boxYStart = getInsets().top + SPACING;
-		int boxHeight = (getHeight() - getInsets().bottom - SPACING) - boxYStart;
+		int boxHeight = height - 2 * spacing;
 		int heightPerInput = boxHeight / (numberOfInputs + 1);
 
-		int startHeight = getInsets().top + SPACING + heightPerInput;
+		int startHeight = getInsets().top + heightPerInput + spacing;
 		for (Signal input : inputs) {
 			if (input.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR) {
 				Map<Integer, LogicValue> values =
@@ -100,52 +97,59 @@ public class VHDLComponent extends JComponent {
 
 	}
 
-
-
 	@Override
-	public Dimension preferredSize() {
-		return new Dimension(WIDTH, height);
+	public Dimension getPreferredSize() {
+		return new Dimension(width, height);
 	}
 
 	@Override
 	public int getWidth() {
-		return WIDTH + getInsets().left + getInsets().right;
+		return width;
 	}
 
 	@Override
 	public int getHeight() {
-		return height + getInsets().top + getInsets().right;
+		return height;
 	}
+
+	private static final int BORDER = 50;
+	private static final int BOX_WIDTH = 200;
+	private static final int WIRE_LENGTH = 50;
+	private static final int FONT_SPACING = 10;
 
 	@Override
 	public void paintComponent(Graphics g) {
+		g.setFont(Input.font);
 		((Graphics2D) g).setRenderingHint(
 				RenderingHints.KEY_TEXT_ANTIALIASING,
 				RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 
-		int startY = getInsets().top + SPACING;
-		int height = getHeight() - getInsets().bottom - SPACING - startY;
+		int startY = spacing;
+		int height = this.height - 2 * spacing;
 
-		g.drawRect(200, startY, 200, height);
+		int boxStartX = BORDER + Input.WIDTH + WIRE_LENGTH;
+		g.drawRect(boxStartX, startY, BOX_WIDTH, height);
 
 		FontMetrics fm = g.getFontMetrics();
 		int fontHeight = fm.getHeight() / 2;
 
-
+		int wireStart = BORDER + Input.WIDTH;
 		for(Input input : inputs) {
 			input.paint(g);
 			int y = input.startY + Input.HEIGHT / 2;
-			g.drawLine(150, y, 200, y);
-			g.drawString(input.toString(), 210, y + fontHeight);
+			g.drawLine(wireStart, y, boxStartX, y);
+			g.drawString(input.toString(), boxStartX + FONT_SPACING, y + fontHeight / 2);
 		}
 
+		int boxEndX = boxStartX + BOX_WIDTH;
 		for(Input output: outputs) {
 			output.paint(g);
 			int y = output.startY + Input.HEIGHT / 2;
 			String s = output.toString();
 			int width = fm.stringWidth(s);
-			g.drawLine(400, y, 450, y);
-			g.drawString(s, 375 - width, y + fontHeight);
+			g.drawLine(boxEndX, y, boxEndX + WIRE_LENGTH, y);
+			int end = (int) (boxEndX - FONT_SPACING - fm.getStringBounds(s, g).getWidth());
+			g.drawString(s, end, y + fontHeight / 2);
 		}
 	}
 
@@ -202,7 +206,6 @@ public class VHDLComponent extends JComponent {
 			g.fillRect(startX, startY, WIDTH, HEIGHT);
 			g.setColor(Color.black);
 
-			g.setFont(font);
 			FontMetrics fm = g.getFontMetrics();
 			int fontWidth = fm.stringWidth(getValue().toString());
 			int fontHeight = fm.getHeight() / 2;

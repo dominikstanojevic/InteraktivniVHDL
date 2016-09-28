@@ -98,6 +98,7 @@ public class Table {
 	}
 
 	public Integer aliasPosition(String component, String name) {
-		return aliases.get(convertSignal(component, name)).getPosition();
+		Alias alias = aliases.get(convertSignal(component, name));
+		return alias == null ? null : alias.getPosition();
 	}
 }
