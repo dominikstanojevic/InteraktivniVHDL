@@ -57,6 +57,6 @@ public class UI implements IUserInterface, Runnable {
 			value = Vector.createVector(data[1].trim().toCharArray());
 		}
 
-		environment.getModel().signalChange(s, value, System.currentTimeMillis());
+		environment.getModel().signalChange(s, value, null, System.currentTimeMillis());
 	}
 }

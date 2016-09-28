@@ -4,6 +4,7 @@ import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.models.components.Model;
 import hr.fer.zemris.java.vhdl.parser.Parser;
 
+import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,18 +25,18 @@ public class Environment {
 		simulator = new Simulator(this);
 		queue = new TimeQueue();
 		model = new Model(hb.getTable(), hb.getTable().getTestedComponent());
-		ui = new UI(this);
 
 		model.addListener(queue);
-		model.addListener(ui);
 	}
 
 	public static void main(String[] args) throws IOException {
-		String program = new String(Files.readAllBytes(Paths.get("testovi/sklopI.txt")),
+		String program = new String(Files.readAllBytes(Paths.get("testovi/Adder_4_bit.txt")),
 				StandardCharsets.UTF_8);
 		Environment environment = new Environment(program);
-		new Thread(environment.simulator, "Simulator").start();
-		new Thread(environment.ui, "UI").start();
+		Thread simThread = new Thread(environment.simulator, "Simulator");
+		simThread.setDaemon(true);
+		simThread.start();
+		SwingUtilities.invokeLater(() -> new GUI(environment.model).setVisible(true));
 	}
 
 	public Simulator getSimulator() {

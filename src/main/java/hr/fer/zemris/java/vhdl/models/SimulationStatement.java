@@ -2,9 +2,7 @@ package hr.fer.zemris.java.vhdl.models;
 
 import hr.fer.zemris.java.vhdl.models.declarable.Declarable;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
-import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
-import hr.fer.zemris.java.vhdl.models.values.Vector;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetElementStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 
@@ -38,34 +36,30 @@ public class SimulationStatement {
 		return result.isPresent();
 	}
 
-	public boolean execute(Table table) {
-		tempValue = statement.getExpression().evaluate(table, component);
-
-		if (isOpen) {
-			return false;
-		}
-
-		return !tempValue.equals(table
-				.getValueForSignal(component, statement.getDeclarable().getName()));
-	}
-
-	public void assign(Table table) {
-		if (isOpen) {
-			return;
-		}
-
-		Value value = table.getValueForSignal(component, statement.getDeclarable().getName());
-
-		if (statement instanceof SetElementStatement) {
-			((Vector) value).setLogicValue((LogicValue) tempValue,
-					((SetElementStatement) statement).getPosition());
-		} else {
-			table.setValueForSignal(component, statement.getDeclarable().getName(), tempValue);
-		}
+	public Value execute(Table table) {
+		return statement.getExpression().evaluate(table, component);
 	}
 
 	public Signal getSignal(Table table) {
+		if (isOpen) {
+			return null;
+		}
+
 		return table.getSignal(component, statement.getDeclarable().getName());
+	}
+
+	public Integer getPosition(Table table) {
+
+		if(statement instanceof SetElementStatement) {
+			int position = ((SetElementStatement) statement).getPosition();
+			int offset = table.getSignal(component, statement.getDeclarable().getName())
+					.getDeclaration().getStart() - statement.getDeclarable().getDeclaration
+					().getStart();
+
+			return position + offset;
+		} else {
+			return table.aliasPosition(component, statement.getDeclarable().getName());
+		}
 	}
 
 	public long getDelay() {

@@ -57,7 +57,7 @@ public class HierarchyBuilder {
 
 		entities.put(component.getEntity().getName(), component);
 
-		Component testbench = parseMappings(testbenchNode, "");
+		Component testbench = parseMappings(testbenchNode, "", null);
 		table.setComponent(testbench);
 	}
 
@@ -95,9 +95,12 @@ public class HierarchyBuilder {
 		return testbenchSignals;
 	}
 
-	private Component parseMappings(ProgramNode component, String label) {
+	private Component parseMappings(ProgramNode component, String label, Component parent) {
 		Set<Signal> signals = createSignals(component.getArchitecture().getSignals(), label);
 		List<SimulationStatement> statements = addStatements(component, label);
+
+		Component comp = new Component(label, component.getEntity().getDeclarations(),
+				signals, statements, parent);
 
 		List<Component> children = new ArrayList<>();
 		for (EntityMap map : component.getArchitecture().getMappedEntities()) {
@@ -112,12 +115,12 @@ public class HierarchyBuilder {
 
 			checkMapping(map, component, entry, label);
 
-			Component child = parseMappings(entry, name);
+			Component child = parseMappings(entry, name, comp);
 			children.add(child);
 		}
+		comp.addChildren(children);
 
-		return new Component(label, component.getEntity().getDeclarations(), signals,
-				statements, children);
+		return comp;
 	}
 
 	private List<SimulationStatement> addStatements(ProgramNode component, String name) {

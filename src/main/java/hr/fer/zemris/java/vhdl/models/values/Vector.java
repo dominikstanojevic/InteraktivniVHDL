@@ -3,6 +3,8 @@ package hr.fer.zemris.java.vhdl.models.values;
 import hr.fer.zemris.java.vhdl.models.declarations.SignalDeclaration;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -123,6 +125,27 @@ public class Vector implements Value {
 		for (Value value : vector) {
 			Objects.requireNonNull(value, "StdLogic value in vector cannot be null");
 		}
+	}
+
+	public Map<Integer, LogicValue> getMappedValues() {
+		Map<Integer, LogicValue> values = new LinkedHashMap<>();
+
+		int end;
+		if(order == Order.TO) {
+			end = start + this.values.length;
+
+			for(int i = start; i < end; i++) {
+				values.put(i, this.values[i - start]);
+			}
+		} else {
+			end = start - this.values.length;
+
+			for(int i = start; i > end; i--) {
+				values.put(i, this.values[start - i]);
+			}
+		}
+
+		return values;
 	}
 
 	@Override

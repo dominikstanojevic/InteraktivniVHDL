@@ -2,7 +2,6 @@ package hr.fer.zemris.java.vhdl.models;
 
 import hr.fer.zemris.java.vhdl.models.components.Component;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
-import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 
@@ -75,23 +74,7 @@ public class Table {
 		return componentName + "/" + signal;
 	}
 
-	public void setValueForSignal(
-			String componentName, String signalName, Value value) {
-		String signal = convertSignal(componentName, signalName);
 
-		if (signals.containsKey(signal)) {
-			signals.get(signal).setValue(value);
-			return;
-		}
-
-		Alias alias = aliases.get(signal);
-		if (alias.getPosition() == null) {
-			signals.get(alias.getOriginal()).setValue(value);
-		} else {
-			((Vector) signals.get(alias.getOriginal()).getValue())
-					.setLogicValue((LogicValue) value, alias.getPosition());
-		}
-	}
 
 	public void addStatement(SimulationStatement statement) {
 		statements.add(statement);
@@ -112,5 +95,9 @@ public class Table {
 	public List<SimulationStatement> getStatementsForSignal(Signal signal) {
 		return statements.stream().filter(s -> s.sensitiveForSignal(this, signal))
 				.collect(Collectors.toList());
+	}
+
+	public Integer aliasPosition(String component, String name) {
+		return aliases.get(convertSignal(component, name)).getPosition();
 	}
 }

@@ -39,4 +39,6 @@ public interface Declaration {
 
 		return true;
 	}
+
+	Integer getStart();
 }

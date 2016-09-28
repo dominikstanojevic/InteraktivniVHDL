@@ -4,23 +4,24 @@ import hr.fer.zemris.java.vhdl.models.AbstractJob;
 import hr.fer.zemris.java.vhdl.models.SimulationStatement;
 import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
+import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.Vector;
 
 import java.util.List;
 
 /**
  * Created by Dominik on 19.8.2016..
  */
-public class Simulator implements Runnable{
+public class Simulator implements Runnable {
 	private Environment environment;
 
 	public Simulator(Environment environment) {
 		this.environment = environment;
 	}
 
-
 	@Override
 	public void run() {
-		while(true) {
+		while (true) {
 			environment.getQueue().getEvent().execute(environment);
 		}
 	}
@@ -30,29 +31,47 @@ public class Simulator implements Runnable{
 		List<SimulationStatement> statements = table.getStatementsForSignal(signal);
 
 		statements.forEach(s -> {
-			if(s.execute(table)) {
-				environment.getQueue().addEvent(new Assign(s, time, s.getDelay()));
+			Signal sig = s.getSignal(table);
+			if (sig == null) {
+				return;
 			}
+
+			Value value = s.execute(table);
+			Integer position = s.getPosition(table);
+			long delay = s.getDelay();
+
+
+			environment.getQueue().addEvent(new Assign(sig, value, position, time, delay));
+
 		});
 	}
 
-	public void assign(SimulationStatement statement, long time) {
-		statement.assign(environment.getModel().getTable());
-		Signal signal = statement.getSignal(environment.getModel().getTable());
-		environment.getModel().signalChange(signal, time);
+	private boolean checkEquality(Signal signal, Value value, Integer position) {
+		if (position == null) {
+			return signal.getValue().equals(value);
+		}
+
+		return ((Vector) signal.getValue()).getLogicValue(position).equals(value);
 	}
 
 	public class Assign extends AbstractJob {
-		private SimulationStatement statement;
+		private Signal signal;
+		private Value value;
+		private Integer position;
 
-		public Assign(SimulationStatement statement, long currentTime, long delay) {
+		public Assign(
+				Signal signal, Value value, Integer position, long currentTime, long delay) {
 			super(currentTime, delay);
-			this.statement = statement;
+			this.signal = signal;
+			this.position = position;
+			this.value = value;
 		}
 
 		@Override
 		public void execute(Environment environment) {
-			environment.getSimulator().assign(statement, startTime);
+			if (!checkEquality(signal, value, position)) {
+				environment.getModel().signalChange(signal, value, position, startTime);
+			}
 		}
 	}
 }

@@ -2,7 +2,9 @@ package hr.fer.zemris.java.vhdl.models.components;
 
 import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
+import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,19 +32,25 @@ public class Model {
 		listeners.remove(listener);
 	}
 
-	public void signalChange(String signal, Value value, long time) {
+	public void signalChange(String signal, Value value, Integer position, long time) {
 		Signal s = table.getSignal("", signal);
-		signalChange(s, value, time);
+		signalChange(s, value, position, time);
 	}
 
-	public void signalChange(Signal signal, Value value, long time) {
-		signal.setValue(value);
-		signalChange(signal, time);
-	}
+	public void signalChange(Signal signal, Value value, Integer position, long time) {
+		setValue(signal, value, position);
 
-	public void signalChange(Signal signal, long time) {
+
 		for(IModelListener listener : listeners) {
 			listener.signalChanged(signal, time);
+		}
+	}
+
+	private void setValue(Signal signal, Value value, Integer position) {
+		if (position != null) {
+			((Vector) signal.getValue()).setLogicValue((LogicValue) value, position);
+		} else {
+			signal.setValue(value);
 		}
 	}
 

@@ -69,12 +69,21 @@ public class PortDeclaration implements Declaration {
 
 	@Override
 	public int size() {
+		if(typeOf == Value.TypeOf.STD_LOGIC) {
+			return 1;
+		}
+
 		return Math.abs(end - start) + 1;
 	}
 
 	@Override
 	public Declaration convertToScalar() {
 		return PortDeclaration.getLogicDeclaration(this.portType);
+	}
+
+	@Override
+	public Integer getStart() {
+		return start;
 	}
 
 	public Type getPortType() {
