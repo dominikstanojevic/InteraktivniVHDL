@@ -111,8 +111,7 @@ public class GUI extends JFrame implements IModelListener {
 			public void mouseClicked(MouseEvent e) {
 				Point p = layer.getMousePosition();
 				double zoom = zoomUI.zoom;
-				System.out.println(zoom * p.getX() + ", " + zoom * p.getY());
-
+				
 				Optional<VHDLComponent.Input> input =
 						blackBox.getInputForPoint(p.getX() / zoom, p.getY() / zoom);
 
@@ -142,16 +141,16 @@ public class GUI extends JFrame implements IModelListener {
 	}
 
 	private void addKeyBindings(ZoomUI zoomUI) {
-		layer.getInputMap()
+		layer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
 				.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, InputEvent.CTRL_MASK), "zoomIn");
-		layer.getInputMap()
+		layer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
 				.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.CTRL_MASK), "zoomIn");
 		layer.getActionMap().put("zoomIn", zoomUI.zoomIn);
 
-		layer.getInputMap()
+		layer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
 				.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, InputEvent.CTRL_MASK),
 						"zoomOut");
-		layer.getInputMap()
+		layer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
 				.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, InputEvent.CTRL_MASK),
 						"zoomOut");
 		layer.getActionMap().put("zoomOut", zoomUI.zoomOut);
