@@ -52,7 +52,7 @@ public class Graph {
 		NumberAxis axis = new NumberAxis("Time");
 		plot.setDomainAxis(axis);
 		axis.setAutoRange(true);
-		axis.setFixedAutoRange(20000.0);  // 60 seconds
+		axis.setFixedAutoRange(60000.0);  // 1 minute
 		axis.setNumberFormatOverride(new DecimalFormat("0"));
 
 

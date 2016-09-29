@@ -26,22 +26,24 @@ public class Environment {
 	public Environment(String program) {
 		HierarchyBuilder hb =
 				new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
-		queue = new TimeQueue();
-		simulator = new Simulator(this);
 		model = new Model(hb.getTable(), hb.getTable().getTestedComponent());
 
+		queue = new TimeQueue();
 		model.addListener(queue);
+
+		startTime = System.currentTimeMillis();
+		simulator = new Simulator(this);
+
 	}
 
 	public static void main(String[] args) throws IOException {
-		String program = new String(Files.readAllBytes(Paths.get("testovi/sklopI.txt")),
+		String program = new String(Files.readAllBytes(Paths.get("testovi/Adder_4_bit.txt")),
 				StandardCharsets.UTF_8);
 		Environment environment = new Environment(program);
 		Thread simThread = new Thread(environment.simulator, "Simulator");
 		simThread.setDaemon(true);
 		simThread.start();
 
-		environment.startTime = System.currentTimeMillis();
 		SwingUtilities.invokeLater(
 				() -> {
 					GUI gui = new GUI(environment.model, environment.startTime);
@@ -55,8 +57,9 @@ public class Environment {
 			environment.gui.updateGraphs(time);
 			environment.counter++;
 
-			if(environment.counter > 20000) {
+			if(environment.counter > 60000) {
 				environment.gui.clearGraphs();
+				environment.counter = 0;
 			}
 		});
 		timer.start();
@@ -74,4 +77,7 @@ public class Environment {
 		return model;
 	}
 
+	public long getStartTime() {
+		return startTime;
+	}
 }

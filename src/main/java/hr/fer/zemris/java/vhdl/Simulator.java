@@ -17,6 +17,22 @@ public class Simulator implements Runnable {
 
 	public Simulator(Environment environment) {
 		this.environment = environment;
+
+		Table table = environment.getModel().getTable();
+		List<SimulationStatement> statements = table.getStatements();
+
+		statements.forEach(s -> {
+			Signal sig = s.getSignal(table);
+			if (sig == null) {
+				return;
+			}
+
+			Value value = s.execute(table);
+			Integer position = s.getPosition(table);
+
+			environment.getModel().signalChange(sig, value, position, environment.getStartTime());
+		});
+
 	}
 
 	@Override
