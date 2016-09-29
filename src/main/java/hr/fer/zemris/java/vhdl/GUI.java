@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl;
 
+import hr.fer.zemris.java.vhdl.models.WrapLayout;
 import hr.fer.zemris.java.vhdl.models.components.Component;
 import hr.fer.zemris.java.vhdl.models.components.IModelListener;
 import hr.fer.zemris.java.vhdl.models.components.Model;
@@ -7,8 +8,10 @@ import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
+import org.jfree.chart.ChartPanel;
 
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayer;
@@ -16,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.LayerUI;
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -29,7 +33,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominik on 28.9.2016..
@@ -39,18 +46,20 @@ public class GUI extends JFrame implements IModelListener {
 	private VHDLComponent blackBox;
 	private JLayer<JComponent> layer;
 	private JScrollPane scrollPane;
+	private List<Graph> graphs;
 
-	public GUI(Model model) {
+	public GUI(Model model, long startTime) {
 		this.model = model;
 		model.addListener(this);
 
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setTitle("InteraktivniVHDL");
 
-		initGUI(model.getTable().getTestedComponent());
+		initGUI(model.getTable().getTestedComponent(), startTime);
 		pack();
 	}
 
-	private void initGUI(Component component) {
+	private void initGUI(Component component, long startTime) {
 		Container cp = getContentPane();
 		cp.setLayout(new BorderLayout());
 		blackBox = new VHDLComponent(component);
@@ -60,10 +69,40 @@ public class GUI extends JFrame implements IModelListener {
 		layer = new JLayer<>(blackBox, zoomUI);
 		scrollPane = new JScrollPane(layer);
 
-		panel.add(scrollPane, BorderLayout.CENTER);
-		cp.add(panel);
 		addMouseListener(zoomUI);
 		addKeyBindings(zoomUI);
+
+		graphs = createGraphs(startTime);
+		JPanel chartsPanel = new JPanel(new WrapLayout());
+		graphs.forEach(g -> {
+			ChartPanel chartPanel = new ChartPanel(g.getChart());
+			chartPanel.setPreferredSize(new Dimension(400, 200));
+			chartsPanel.add(chartPanel);
+		});
+
+		JFrame frame = new JFrame();
+		frame.getContentPane()
+				.add(new JScrollPane(chartsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+		frame.setSize(600, 600);
+		frame.setTitle("Graphs");
+
+		JButton statistics = new JButton("Graphs");
+		statistics.addActionListener(l -> frame.setVisible(true));
+
+		panel.add(scrollPane, BorderLayout.CENTER);
+		panel.add(statistics, BorderLayout.PAGE_END);
+		cp.add(panel);
+	}
+
+	private List<Graph> createGraphs(long startTime) {
+		List<Graph> graphs = new ArrayList<>();
+		List<VHDLComponent.Input> signals = blackBox.getSignals();
+
+		graphs.addAll(signals.stream().map(signal -> new Graph(signal, startTime))
+				.collect(Collectors.toList()));
+
+		return graphs;
 	}
 
 	private void addMouseListener(ZoomUI zoomUI) {
@@ -118,9 +157,20 @@ public class GUI extends JFrame implements IModelListener {
 		layer.getActionMap().put("zoomOut", zoomUI.zoomOut);
 	}
 
+	public void updateGraphs(long time) {
+		graphs.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(time)));
+	}
+
+	public void clearGraphs() {
+		graphs.forEach(g -> g.clearData());
+	}
+
 	@Override
 	public void signalChanged(Signal signal, long time) {
 		blackBox.repaint();
+
+		graphs.stream().filter(g -> g.getSignal() == signal)
+				.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(time)));
 	}
 
 	private class ZoomUI extends LayerUI<JComponent> {
@@ -180,8 +230,8 @@ public class GUI extends JFrame implements IModelListener {
 
 				Point pos = scrollPane.getViewport().getViewPosition();
 
-				int newX = (int)(point.x*(0.9f - 1f) + 0.9f*pos.x);
-				int newY = (int)(point.y*(0.9f - 1f) + 0.9f*pos.y);
+				int newX = (int) (point.x * (0.9f - 1f) + 0.9f * pos.x);
+				int newY = (int) (point.y * (0.9f - 1f) + 0.9f * pos.y);
 				scrollPane.getViewport().setViewPosition(new Point(newX, newY));
 
 				reDraw();

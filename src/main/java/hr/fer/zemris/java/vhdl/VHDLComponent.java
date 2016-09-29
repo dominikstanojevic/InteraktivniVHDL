@@ -193,7 +193,7 @@ public class VHDLComponent extends JComponent {
 			return true;
 		}
 
-		private LogicValue getValue() {
+		public LogicValue getValue() {
 			if (signal.getDeclaration().getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR) {
 				return ((Vector) signal.getValue()).getLogicValue(position);
 			} else {
@@ -229,7 +229,11 @@ public class VHDLComponent extends JComponent {
 		}
 	}
 
-	static class Output {
+	public List<Input> getSignals() {
+		List<Input> signals = new ArrayList<>();
+		signals.addAll(inputs);
+		signals.addAll(outputs);
 
+		return signals;
 	}
 }
