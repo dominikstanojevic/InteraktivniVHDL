@@ -217,7 +217,7 @@ public class VHDLComponent extends JComponent {
 
 		@Override
 		public String toString() {
-			return signal.getName() + (position == null ? "" : position);
+			return signal.toString() + (position == null ? "" : position);
 		}
 
 		public Signal getSignal() {

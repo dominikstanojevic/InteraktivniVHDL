@@ -1,9 +1,0 @@
-To start the program enter following line in the command prompt:
-
-java -jar InteraktivniVHDL.jar -init{[signals]} [filename]
-
--init{[signals]} parameter is optional
-[filename] is not optional, all files required for simulation must be placed in this folder
-
-[signals] should be given as [name]=value. If more than one input signal is present, separate
-them using commas. For instance -init{a=1,b=111} is valid. Space between signals are not allowed.

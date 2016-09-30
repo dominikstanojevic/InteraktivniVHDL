@@ -44,7 +44,7 @@ public class Component {
 	}
 
 	private Signal getSignalFromPort(Port port) {
-		return parent.signals.stream().filter(s -> s.getName().equals("/" + port.getName()))
+		return parent.signals.stream().filter(s -> s.getName().equals(port.getName()))
 				.findFirst().get();
 	}
 

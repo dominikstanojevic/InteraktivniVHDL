@@ -53,7 +53,7 @@ public class Environment {
 
 		for (Map.Entry<String, String> entry : initial.entrySet()) {
 			Optional<Signal> optional = inputs.stream()
-					.filter(signal -> signal.getName().equals("/" + entry.getKey()))
+					.filter(signal -> signal.getName().equals(entry.getKey()))
 					.findFirst();
 
 			if (!optional.isPresent()) {

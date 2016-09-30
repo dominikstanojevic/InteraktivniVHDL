@@ -30,7 +30,12 @@ public class Signal implements Declarable<SignalDeclaration> {
 
 	public Signal createValue(String label) {
 		if (value == null) {
-			Signal newSignal = new Signal(label + "/" + this.label, declaration);
+			String prefix = "";
+			if(!label.isEmpty()) {
+				prefix = label + "/";
+				System.out.println("Usao");
+			}
+			Signal newSignal = new Signal(prefix + this.label, declaration);
 			newSignal.value = declaration.getTypeOf().getDefaultValue(declaration);
 			return newSignal;
 		} else {

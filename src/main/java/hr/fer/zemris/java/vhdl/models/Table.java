@@ -58,7 +58,13 @@ public class Table {
 		signals.put(signal.getName(), signal);
 	}
 
-	public void addAlias(String alias, String original, Integer position) {
+	public void addAlias(String alias, String label, String original, Integer position) {
+		String prefix = "";
+		if (!label.isEmpty()) {
+			prefix = label + "/";
+		}
+		original = prefix + original;
+
 		if (aliases.containsKey(original)) {
 			aliases.put(alias, new Alias(aliases.get(original).getOriginal(), position));
 		} else {
@@ -71,10 +77,13 @@ public class Table {
 	}
 
 	public String convertSignal(String componentName, String signal) {
-		return componentName + "/" + signal;
+		String prefix = "";
+		if (!componentName.isEmpty()) {
+			prefix = componentName + "/";
+		}
+
+		return prefix + signal;
 	}
-
-
 
 	public void addStatement(SimulationStatement statement) {
 		statements.add(statement);

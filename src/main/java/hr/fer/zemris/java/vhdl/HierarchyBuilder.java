@@ -190,7 +190,7 @@ public class HierarchyBuilder {
 			if (mappedTo instanceof Constant) {
 				Signal signal = new Signal(((Constant) mappedTo).getValue());
 				table.addSignal(signal);
-				table.addAlias(alias, signal.getName(), null);
+				table.addAlias(alias, "", signal.getName(), null);
 				continue;
 			}
 
@@ -203,7 +203,7 @@ public class HierarchyBuilder {
 				position = ((IndexerOperator) mappedTo).getPosition();
 			}
 
-			table.addAlias(alias, label + "/" + mappedTo.getName(), position);
+			table.addAlias(alias, label, mappedTo.getName(), position);
 		}
 	}
 
@@ -231,7 +231,7 @@ public class HierarchyBuilder {
 			if (signals.get(i) instanceof Constant) {
 				Signal signal = new Signal(((Constant) signals.get(i)).getValue());
 				table.addSignal(signal);
-				table.addAlias(alias, signal.getName(), null);
+				table.addAlias(alias, "", signal.getName(), null);
 				continue;
 			}
 
@@ -244,13 +244,13 @@ public class HierarchyBuilder {
 				position = ((IndexerOperator) signals.get(i)).getPosition();
 			}
 
-			table.addAlias(alias, label + "/" + signals.get(i).getName(), position);
+			table.addAlias(alias, label, signals.get(i).getName(), position);
 		}
 	}
 
 	private String getEntry(String name) {
 		try {
-			return new String(Files.readAllBytes(Paths.get(name + ".vhdl")),
+			return new String(Files.readAllBytes(Paths.get("testovi/" + name + ".vhdl")),
 					StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading file: " + name + ".");
