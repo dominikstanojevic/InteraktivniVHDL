@@ -33,8 +33,8 @@ public class Signal implements Declarable<SignalDeclaration> {
 			String prefix = "";
 			if(!label.isEmpty()) {
 				prefix = label + "/";
-				System.out.println("Usao");
 			}
+
 			Signal newSignal = new Signal(prefix + this.label, declaration);
 			newSignal.value = declaration.getTypeOf().getDefaultValue(declaration);
 			return newSignal;

@@ -19,7 +19,7 @@ import java.util.Map;
  * Created by Dominik on 29.9.2016..
  */
 public class Graph {
-	private long startTime;
+	private double startTime;
 	private VHDLComponent.Input signal;
 	private XYSeries series;
 
@@ -34,7 +34,7 @@ public class Graph {
 	}
 
 	public Graph(VHDLComponent.Input signal, long startTime) {
-		this.startTime = startTime;
+		this.startTime = (double) startTime / 1000;
 
 		this.signal = signal;
 		series = new XYSeries(signal.toString());
@@ -42,17 +42,18 @@ public class Graph {
 
 		XYSeriesCollection dataset = new XYSeriesCollection(series);
 		chart = createChart(dataset);
-		updateSignal(startTime);
+		updateSignal(this.startTime / 1000);
 	}
 
 	private JFreeChart createChart(XYDataset dataset) {
-		final JFreeChart result = ChartFactory.createXYLineChart(null, "Time", "Value",
+		final JFreeChart result = ChartFactory.createXYLineChart(null, "Seconds", "Value",
 				dataset);
 		final XYPlot plot = result.getXYPlot();
-		NumberAxis axis = new NumberAxis("Time");
+		NumberAxis axis = new NumberAxis("Seconds");
 		plot.setDomainAxis(axis);
 		axis.setAutoRange(true);
-		axis.setFixedAutoRange(60000.0);  // 1 minute
+		axis.setFixedAutoRange(60.0);  // 1 minute
+
 		axis.setNumberFormatOverride(new DecimalFormat("0"));
 
 
@@ -63,13 +64,12 @@ public class Graph {
 	}
 
 
-	public void updateSignal(long time) {
-		long diff = time - startTime;
-
+	public void updateSignal(double time) {
+		double diff = time - startTime;
 		updateSignalWithDiffTime(diff);
 	}
 
-	public void updateSignalWithDiffTime(long time) {
+	public void updateSignalWithDiffTime(double time) {
 		series.add(time, values.get(signal.getValue()));
 	}
 

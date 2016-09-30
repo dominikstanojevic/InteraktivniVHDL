@@ -53,7 +53,7 @@ public class GUI extends JFrame implements IModelListener {
 		model.addListener(this);
 
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		setTitle("InteraktivniVHDL");
+		setTitle("InteraktivniVHDL (Autor: Dominik Stanojević)");
 
 		initGUI(model.getTable().getTestedComponent(), startTime);
 		pack();
@@ -157,7 +157,8 @@ public class GUI extends JFrame implements IModelListener {
 	}
 
 	public void updateGraphs(long time) {
-		graphs.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(time)));
+		double t = (double) time / 1000;
+		graphs.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(t)));
 	}
 
 	public void clearGraphs() {
@@ -168,8 +169,9 @@ public class GUI extends JFrame implements IModelListener {
 	public void signalChanged(Signal signal, long time) {
 		blackBox.repaint();
 
+		double t = (double) time / 1000;
 		graphs.stream().filter(g -> g.getSignal() == signal)
-				.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(time)));
+				.forEach(g -> SwingUtilities.invokeLater(() -> g.updateSignal(t)));
 	}
 
 	private class ZoomUI extends LayerUI<JComponent> {
