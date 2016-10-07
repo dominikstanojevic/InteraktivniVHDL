@@ -42,7 +42,7 @@ public class Graph {
 
 		XYSeriesCollection dataset = new XYSeriesCollection(series);
 		chart = createChart(dataset);
-		updateSignal(this.startTime / 1000);
+		updateSignal(this.startTime);
 	}
 
 	private JFreeChart createChart(XYDataset dataset) {

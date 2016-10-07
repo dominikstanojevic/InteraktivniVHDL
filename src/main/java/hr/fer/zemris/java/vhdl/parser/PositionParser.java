@@ -1,0 +1,156 @@
+package hr.fer.zemris.java.vhdl.parser;
+
+import hr.fer.zemris.java.vhdl.lexer.Lexer;
+import hr.fer.zemris.java.vhdl.lexer.TokenType;
+import hr.fer.zemris.java.vhdl.models.values.Vector;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Created by Dominik on 3.10.2016..
+ */
+public class PositionParser {
+	enum Position {
+		TOP("top"), LEFT("left"), RIGHT("right"), BOTTOM("bottom");
+
+		private String string;
+
+		Position(String string) {
+			this.string = string;
+		}
+
+		@Override
+		public String toString() {
+			return string;
+		}
+
+		public static Optional<Position> getValueFromString(String string) {
+			return Arrays.stream(Position.values()).filter(p -> p.string.equals(string))
+					.findFirst();
+		}
+	}
+
+	private Lexer lexer;
+	private List<Definition> definitions = new ArrayList<>();
+
+	public PositionParser(String fileName) throws IOException {
+		String data = new String(Files.readAllBytes(Paths.get("testovi/" + fileName + ".sim")),
+				StandardCharsets.UTF_8);
+		lexer = new Lexer(data);
+		parse();
+	}
+
+	private void parse() {
+		while (lexer.getCurrentToken().getType() != TokenType.EOF) {
+			Definition definition = parseLine();
+			definitions.add(definition);
+		}
+	}
+
+	private Definition parseLine() {
+		checkType(TokenType.IDENT);
+		String signal = (String) currentValue();
+		Definition definition = new Definition(signal);
+		lexer.nextToken();
+
+		if (lexer.getCurrentToken().getType() == TokenType.OPEN_PARENTHESES) {
+			lexer.nextToken();
+			parseParentheses(definition);
+		}
+
+		Optional<Position> position = Position.getValueFromString((String) currentValue());
+		if (position.isPresent()) {
+			definition.position = position.get();
+		} else {
+			throw new ParserException("Invalid position for signal: " + signal + ".");
+		}
+		lexer.nextToken();
+
+		return definition;
+	}
+
+	private void parseParentheses(Definition definition) {
+		checkType(TokenType.NUMBER);
+		int number = (int) currentValue();
+		lexer.nextToken();
+
+		if (lexer.getCurrentToken().getType() == TokenType.CLOSED_PARENTHESES) {
+			definition.access = number;
+			lexer.nextToken();
+		} else if (lexer.getCurrentToken().getType() == TokenType.KEYWORD) {
+			Vector.Order order  = getOrder(definition, (String) currentValue());
+			lexer.nextToken();
+
+			checkType(TokenType.NUMBER);
+			int second = (int) currentValue();
+			checkOrder(definition.signal, number, order, second);
+			definition.start = number;
+			definition.end = second;
+			lexer.nextToken();
+
+			checkType(TokenType.CLOSED_PARENTHESES);
+			lexer.nextToken();
+		} else {
+			throw new ParserException("Invalid line for signal " + definition.signal + ".");
+		}
+	}
+
+	private void checkOrder(String signal, int first, Vector.Order order, int second) {
+		if(order == Vector.Order.TO && first <= second) {
+			return;
+		}
+		if(order == Vector.Order.DOWNTO && first >= second) {
+			return;
+		}
+
+		throw new ParserException("Invalid order for signal " + signal + ".");
+	}
+
+	private Vector.Order getOrder(Definition definition, String order) {
+		switch (order) {
+			case "to":
+				return Vector.Order.TO;
+			case "downto":
+				return Vector.Order.DOWNTO;
+			default:
+				throw new ParserException(
+						"Invalid order for signal " + definition.signal + ".");
+		}
+	}
+
+	private Object currentValue() {
+		return lexer.getCurrentToken().getValue();
+	}
+
+	private void checkType(TokenType type) {
+		if (lexer.getCurrentToken().getType() != type) {
+			throw new ParserException("Expect identification in sim file");
+		}
+	}
+
+	public static class Definition {
+		private String signal;
+		private Position position;
+
+		private Integer access;
+
+		private Integer start;
+		private Integer end;
+
+		public Definition(String signal) {
+			this.signal = signal;
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		PositionParser pp = new PositionParser("testPozicije");
+		pp.definitions.forEach(d -> System.out.println(d.signal + " " + d.position));
+	}
+}
