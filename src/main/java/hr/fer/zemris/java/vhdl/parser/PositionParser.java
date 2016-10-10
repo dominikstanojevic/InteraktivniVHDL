@@ -5,9 +5,6 @@ import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -16,7 +13,7 @@ import java.util.Optional;
  * Created by Dominik on 3.10.2016..
  */
 public class PositionParser {
-    enum Position {
+    public enum Position {
         TOP("top"), LEFT("left"), RIGHT("right"), BOTTOM("bottom");
 
         private String string;
@@ -39,10 +36,8 @@ public class PositionParser {
     private Lexer lexer;
     private LinkedHashSet<Definition> definitions = new LinkedHashSet<>();
 
-    public PositionParser(String fileName) throws IOException {
-        String data = new String(Files.readAllBytes(Paths.get("testovi/" + fileName + ".sim")),
-                StandardCharsets.UTF_8);
-        lexer = new Lexer(data);
+    public PositionParser(String program)  {
+        lexer = new Lexer(program);
         parse();
     }
 
@@ -208,6 +203,18 @@ public class PositionParser {
             result = 31 * result + (access != null ? access.hashCode() : 0);
             return result;
         }
+
+        public String getSignal() {
+            return signal;
+        }
+
+        public Position getPosition() {
+            return position;
+        }
+
+        public Integer getAccess() {
+            return access;
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -216,4 +223,7 @@ public class PositionParser {
                 .position));
     }
 
+    public LinkedHashSet<Definition> getDefinitions() {
+        return definitions;
+    }
 }

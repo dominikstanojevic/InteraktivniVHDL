@@ -8,6 +8,7 @@ import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
+import hr.fer.zemris.java.vhdl.parser.PositionParser;
 import org.jfree.chart.ChartPanel;
 
 import javax.swing.AbstractAction;
@@ -36,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -48,21 +50,27 @@ public class GUI extends JFrame implements IModelListener {
 	private JScrollPane scrollPane;
 	private List<Graph> graphs;
 
-	public GUI(Model model, long startTime) {
+	public GUI(Model model, long startTime, Set<PositionParser.Definition> positions) {
 		this.model = model;
 		model.addListener(this);
 
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setTitle("InteraktivniVHDL (Autor: Dominik Stanojević)");
 
-		initGUI(model.getTable().getTestedComponent(), startTime);
+		initGUI(model.getTable().getTestedComponent(), startTime, positions);
 		pack();
 	}
 
-	private void initGUI(Component component, long startTime) {
+	private void initGUI(Component component, long startTime, Set<PositionParser.Definition>
+			positions) {
 		Container cp = getContentPane();
 		cp.setLayout(new BorderLayout());
-		blackBox = new VHDLComponent(component);
+
+		if(positions != null) {
+			blackBox = new JVHDLComponent(component, positions);
+		} else {
+			blackBox = new VHDLComponent(component);
+		}
 
 		JPanel panel = new JPanel(new BorderLayout());
 		ZoomUI zoomUI = new ZoomUI();

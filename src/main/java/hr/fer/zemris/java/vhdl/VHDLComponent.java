@@ -23,22 +23,28 @@ import java.util.Optional;
  * Created by Dominik on 26.9.2016..
  */
 public class VHDLComponent extends JComponent {
-	private Component component;
+	protected Component component;
 
-	private List<Input> inputs = new ArrayList<>();
-	private List<Input> outputs = new ArrayList<>();
+	protected List<Input> inputs = new ArrayList<>();
+	protected List<Input> outputs = new ArrayList<>();
 
-	private int width = 600;
-	private int height;
+	protected int width = 600;
+	protected int height;
 
 	private int connectorSpacing = 10;
 	private int spacing = 25;
 
 
 	public VHDLComponent(Component component) {
+		this(component, true);
+	}
+
+	protected VHDLComponent(Component component, boolean init) {
 		this.component = component;
 
-		initComponent();
+		if(init) {
+			initComponent();
+		}
 	}
 
 	private void initComponent() {
@@ -64,11 +70,12 @@ public class VHDLComponent extends JComponent {
 				Map<Integer, LogicValue> values =
 						((Vector) output.getValue()).getMappedValues();
 				for(Map.Entry<Integer, LogicValue> value : values.entrySet()) {
-					this.outputs.add(new Input(output, value.getKey(), 450, startHeight));
+					this.outputs.add(new Input(output, value.getKey(), 450, startHeight,
+							true));
 					startHeight += heightPerInput;
 				}
 			} else {
-				this.outputs.add(new Input(output, null, 450, startHeight));
+				this.outputs.add(new Input(output, null, 450, startHeight, true));
 				startHeight += heightPerInput;
 			}
 		}
@@ -86,11 +93,11 @@ public class VHDLComponent extends JComponent {
 				Map<Integer, LogicValue> values =
 						((Vector) input.getValue()).getMappedValues();
 				for(Map.Entry<Integer, LogicValue> value : values.entrySet()) {
-					this.inputs.add(new Input(input, value.getKey(), 50, startHeight));
+					this.inputs.add(new Input(input, value.getKey(), 50, startHeight, true));
 					startHeight += heightPerInput;
 				}
 			} else {
-				this.inputs.add(new Input(input, null, 50, startHeight));
+				this.inputs.add(new Input(input, null, 50, startHeight, true));
 				startHeight += heightPerInput;
 			}
 		}
@@ -162,18 +169,26 @@ public class VHDLComponent extends JComponent {
 		private Integer position;
 		private int startX;
 		private int startY;
+		private boolean horizontal;
 
 		public static final int HEIGHT = 50;
 		public static final int WIDTH = 100;
 
-		private static final Font font = new Font("SansSerif", Font.PLAIN, 20);
+		public static final Font font = new Font("SansSerif", Font.PLAIN, 20);
 
 		public Input(
-				Signal signal, Integer position, int startX, int centerY) {
+				Signal signal, Integer position, int startX, int startY, boolean horizontal) {
 			this.signal = signal;
 			this.position = position;
 			this.startX = startX;
-			this.startY = centerY - HEIGHT / 2;
+			this.startY = startY;
+			this.horizontal = horizontal;
+
+			if (horizontal) {
+				this.startY -= HEIGHT / 2;
+			} else {
+				this.startX -= HEIGHT / 2;
+			}
 		}
 
 		public boolean isInside(double x, double y) {
@@ -183,10 +198,10 @@ public class VHDLComponent extends JComponent {
 			if (y < startY) {
 				return false;
 			}
-			if (x > startX + WIDTH) {
+			if (x > startX + (horizontal ? WIDTH : HEIGHT)) {
 				return false;
 			}
-			if (y > startY + HEIGHT) {
+			if (y > startY + (horizontal ? HEIGHT : WIDTH)) {
 				return false;
 			}
 
@@ -203,14 +218,18 @@ public class VHDLComponent extends JComponent {
 
 		public void paint(Graphics g) {
 			g.setColor(Color.lightGray);
-			g.fillRect(startX, startY, WIDTH, HEIGHT);
+			if(horizontal) {
+				g.fillRect(startX, startY, WIDTH, HEIGHT);
+			} else {
+				g.fillRect(startX, startY, HEIGHT, WIDTH);
+			}
 			g.setColor(Color.black);
 
 			FontMetrics fm = g.getFontMetrics();
 			int fontWidth = fm.stringWidth(getValue().toString());
 			int fontHeight = fm.getHeight() / 2;
-			int startHeight = startY + (HEIGHT + fontHeight) / 2;
-			int startWidth = startX + (WIDTH - fontWidth) / 2;
+			int startHeight = startY + ((horizontal ? HEIGHT : WIDTH) + fontHeight) / 2;
+			int startWidth = startX + ((horizontal ? WIDTH : HEIGHT) - fontWidth) / 2;
 
 			g.drawString(getValue().toString(), startWidth, startHeight);
 		}
@@ -226,6 +245,14 @@ public class VHDLComponent extends JComponent {
 
 		public Integer getPosition() {
 			return position;
+		}
+
+		public int getStartX() {
+			return startX;
+		}
+
+		public int getStartY() {
+			return startY;
 		}
 	}
 

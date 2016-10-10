@@ -7,6 +7,7 @@ import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 import hr.fer.zemris.java.vhdl.parser.Parser;
+import hr.fer.zemris.java.vhdl.parser.PositionParser;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -14,11 +15,13 @@ import javax.swing.Timer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Created by Dominik on 23.9.2016..
@@ -97,6 +100,19 @@ public class Environment {
 		System.exit(-1);
 	}
 
+	private static Set<PositionParser.Definition> readPositions(String filename) throws
+			IOException {
+		Path path = Paths.get(filename + ".sim");
+		if(!Files.isRegularFile(path)) {
+			return null;
+		}
+
+		String program = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+		PositionParser pp = new PositionParser(program);
+
+		return pp.getDefinitions();
+	}
+
 	public static void main(String[] args) throws IOException {
 		int argsLength = args.length;
 
@@ -117,13 +133,19 @@ public class Environment {
 
 		String program =
 				new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+
+		Set<PositionParser.Definition> def = readPositions(path.substring(0, path
+				.lastIndexOf(".")));
+
 		Environment environment = new Environment(program, inital);
 		Thread simThread = new Thread(environment.simulator, "Simulator");
 		simThread.setDaemon(true);
 		simThread.start();
 
+
+
 		SwingUtilities.invokeLater(() -> {
-			GUI gui = new GUI(environment.model, environment.startTime);
+			GUI gui = new GUI(environment.model, environment.startTime, def);
 			gui.setVisible(true);
 			environment.gui = gui;
 		});
