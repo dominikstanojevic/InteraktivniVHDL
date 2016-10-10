@@ -133,13 +133,13 @@ public class JVHDLComponent extends VHDLComponent {
 		int widthPerInput = boxWidth / (bottom + 1);
 
 		int startWidth = BORDER + widthPerInput;
-		if(leftExists) {
+		if (leftExists) {
 			startWidth += Input.WIDTH + WIRE_LENGTH;
 		}
 
 		int startHeight = height - BORDER - Input.WIDTH;
 
-		for(PositionParser.Definition d : definitions) {
+		for (PositionParser.Definition d : definitions) {
 			readSignal(this.bottom, d, inputs, outputs, startWidth, startHeight, false);
 			startWidth += widthPerInput;
 		}
@@ -210,7 +210,7 @@ public class JVHDLComponent extends VHDLComponent {
 		int box = getBoxSize(top, bottom);
 		boxWidth = box < MIN_BOX_WIDTH ? MIN_BOX_WIDTH : box;
 
-		width = calculateSize(left, right);
+		width = calculateSize(left, right, boxWidth);
 		leftExists = left != 0 ? true : false;
 	}
 
@@ -218,22 +218,21 @@ public class JVHDLComponent extends VHDLComponent {
 		int box = getBoxSize(left, right);
 		boxHeight = box < MIN_BOX_HEIGHT ? MIN_BOX_HEIGHT : box;
 
-		height = calculateSize(top, bottom);
+		height = calculateSize(top, bottom, boxHeight);
 		topExists = top != 0 ? true : false;
 	}
 
 	private int getBoxSize(int a, int b) {
 		int max = Math.max(a, b);
-		return 2 * SPACING + max * (VHDLComponent.Input.HEIGHT + CONNECTOR_SPACING) +
-			   CONNECTOR_SPACING;
+		return 2 * SPACING + max * (Input.WIDTH + CONNECTOR_SPACING) + CONNECTOR_SPACING;
 	}
 
-	private int calculateSize(int a, int b) {
+	private int calculateSize(int a, int b, int box) {
 		int aExists = a == 0 ? 0 : 1;
 		int bExists = b == 0 ? 0 : 1;
 
 		return 2 * BORDER + (aExists + bExists) * (VHDLComponent.Input.WIDTH + WIRE_LENGTH) +
-			   boxHeight;
+			   box;
 	}
 
 	@Override
@@ -255,8 +254,6 @@ public class JVHDLComponent extends VHDLComponent {
 		FontMetrics fm = g.getFontMetrics();
 		int fontHeight = fm.getHeight() / 2;
 
-
-
 		paintTop(g, fm);
 		paintLeft(g, fm);
 		paintRight(g, fm);
@@ -273,8 +270,7 @@ public class JVHDLComponent extends VHDLComponent {
 			int lineHeight = t.getStartY() + Input.WIDTH;
 			g.drawLine(lineWidth, lineHeight, lineWidth, lineHeight + WIRE_LENGTH);
 
-			g.drawString(t.getSignal().getName(),
-					lineWidth - fm.stringWidth(t.getSignal().getName()) / 2,
+			g.drawString(t.toString(), lineWidth - fm.stringWidth(t.getSignal().getName()) / 2,
 					lineHeight + WIRE_LENGTH + FONT_SPACING + fontHeight / 2);
 		}
 	}
@@ -282,15 +278,15 @@ public class JVHDLComponent extends VHDLComponent {
 	private void paintBottom(Graphics g, FontMetrics fm) {
 		int fontHeight = fm.getHeight() / 2;
 
-		for(Input b : bottom) {
+		for (Input b : bottom) {
 			b.paint(g);
 
 			int lineWidth = b.getStartX() + Input.HEIGHT / 2;
 			int lineHeight = b.getStartY();
 			g.drawLine(lineWidth, lineHeight, lineWidth, lineHeight - WIRE_LENGTH);
 
-			g.drawString(b.getSignal().getName(), lineWidth - fm.stringWidth(b.getSignal()
-					.getName()) / 2, lineHeight - WIRE_LENGTH - FONT_SPACING - fontHeight / 2);
+			g.drawString(b.toString(), lineWidth - fm.stringWidth(b.getSignal().getName()) / 2,
+					lineHeight - WIRE_LENGTH - FONT_SPACING - fontHeight / 2);
 		}
 	}
 

@@ -28,7 +28,7 @@ public class VHDLComponent extends JComponent {
 	protected List<Input> inputs = new ArrayList<>();
 	protected List<Input> outputs = new ArrayList<>();
 
-	protected int width = 600;
+	protected int width;
 	protected int height;
 
 	private int connectorSpacing = 10;
@@ -43,6 +43,7 @@ public class VHDLComponent extends JComponent {
 		this.component = component;
 
 		if(init) {
+			width = 600;
 			initComponent();
 		}
 	}

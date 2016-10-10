@@ -250,7 +250,7 @@ public class HierarchyBuilder {
 
 	private String getEntry(String name) {
 		try {
-			return new String(Files.readAllBytes(Paths.get("testovi/" + name + ".vhdl")),
+			return new String(Files.readAllBytes(Paths.get(name + ".vhdl")),
 					StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading file: " + name + ".");
