@@ -1,6 +1,7 @@
 package hr.fer.zemris.java.vhdl;
 
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
+import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.components.Model;
 import hr.fer.zemris.java.vhdl.models.declarable.Signal;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
@@ -100,7 +101,8 @@ public class Environment {
 		System.exit(-1);
 	}
 
-	private static Set<PositionParser.Definition> readPositions(String filename) throws
+	private static Set<PositionParser.Definition> readPositions(String filename, Table table)
+			throws
 			IOException {
 		Path path = Paths.get(filename + ".sim");
 		if(!Files.isRegularFile(path)) {
@@ -108,7 +110,7 @@ public class Environment {
 		}
 
 		String program = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-		PositionParser pp = new PositionParser(program);
+		PositionParser pp = new PositionParser(program, table);
 
 		return pp.getDefinitions();
 	}
@@ -134,10 +136,12 @@ public class Environment {
 		String program =
 				new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
 
-		Set<PositionParser.Definition> def = readPositions(path.substring(0, path
-				.lastIndexOf(".")));
-
 		Environment environment = new Environment(program, inital);
+
+		Set<PositionParser.Definition> def = readPositions(path.substring(0, path
+				.lastIndexOf(".")), environment.getModel().getTable());
+
+
 		Thread simThread = new Thread(environment.simulator, "Simulator");
 		simThread.setDaemon(true);
 		simThread.start();

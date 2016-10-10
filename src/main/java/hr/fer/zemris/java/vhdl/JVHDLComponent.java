@@ -81,9 +81,8 @@ public class JVHDLComponent extends VHDLComponent {
 				left, top);
 
 		initRight(positions.stream()
-						.filter(d -> d.getPosition() == PositionParser.Position.RIGHT)
-						.collect(Collectors.toCollection(LinkedHashSet::new)), inputs, outputs, right,
-				top, left);
+				.filter(d -> d.getPosition() == PositionParser.Position.RIGHT)
+				.collect(Collectors.toCollection(LinkedHashSet::new)), inputs, outputs, right);
 
 		initBottom(positions.stream()
 						.filter(d -> d.getPosition() == PositionParser.Position.BOTTOM)
@@ -93,7 +92,7 @@ public class JVHDLComponent extends VHDLComponent {
 
 	private void initRight(
 			Set<PositionParser.Definition> definitions, List<Signal> inputs,
-			List<Signal> outputs, int right, int top, int left) {
+			List<Signal> outputs, int right) {
 
 		int heightPerInput = boxHeight / (right + 1);
 
@@ -252,7 +251,6 @@ public class JVHDLComponent extends VHDLComponent {
 		g.drawRect(boxStartX, boxStartY, boxWidth, boxHeight);
 
 		FontMetrics fm = g.getFontMetrics();
-		int fontHeight = fm.getHeight() / 2;
 
 		paintTop(g, fm);
 		paintLeft(g, fm);

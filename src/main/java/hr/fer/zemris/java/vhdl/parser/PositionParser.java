@@ -2,9 +2,11 @@ package hr.fer.zemris.java.vhdl.parser;
 
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
+import hr.fer.zemris.java.vhdl.models.Table;
+import hr.fer.zemris.java.vhdl.models.declarable.Signal;
+import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -34,10 +36,14 @@ public class PositionParser {
     }
 
     private Lexer lexer;
+    private Table table;
+
     private LinkedHashSet<Definition> definitions = new LinkedHashSet<>();
 
-    public PositionParser(String program)  {
+    public PositionParser(String program, Table table)  {
         lexer = new Lexer(program);
+        this.table = table;
+
         parse();
     }
 
@@ -65,6 +71,13 @@ public class PositionParser {
             throw new ParserException("Invalid position for signal: " + signal + ".");
         }
         lexer.nextToken();
+
+        Signal s = table.getSignal("", definition.signal);
+        if(definition.start == null && s.getDeclaration().getTypeOf() == Value.TypeOf
+                .STD_LOGIC_VECTOR) {
+            definition.start = s.getDeclaration().getStart();
+            definition.end = s.getDeclaration().getEnd();
+        }
 
         if (definition.getType() == Definition.Type.VECTOR) {
             decomposeDefinition(definition);
@@ -217,11 +230,6 @@ public class PositionParser {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        PositionParser pp = new PositionParser("testPozicije");
-        pp.definitions.forEach(d -> System.out.println(d.signal + "(" + d.access + ") " + d
-                .position));
-    }
 
     public LinkedHashSet<Definition> getDefinitions() {
         return definitions;
