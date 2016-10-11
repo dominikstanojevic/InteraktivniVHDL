@@ -1,7 +1,9 @@
+--ovo su komentari
+--trebali bi biti zanemareni
 ENTITY Adder_4_bit IS PORT(
-	x: in std_logic_vector(3 downto 0);
-	y: in std_logic_vector(3 downto 0);
-	cin: in std_logic;
+	x: in std_logic_vector(3 downto 0); --prvi broj
+	y: in std_logic_vector(3 downto 0); -- drugi broj
+	cin: in std_logic; 
 	sum: out std_logic_vector(3 downto 0);
 	cout: out std_logic
 );
@@ -15,3 +17,4 @@ BEGIN
 	a_3: ENTITY work.Adder_1_bit port map (x(2), y(2), carry(1), sum(2), carry(2));
 	a_4: ENTITY work.Adder_1_bit port map (x(3), y(3), carry(2), sum(3), cout);
 END arch;
+--kraj

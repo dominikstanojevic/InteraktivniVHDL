@@ -3,7 +3,12 @@ package hr.fer.zemris.java.vhdl.lexer;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Vector;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Dominik on 22.7.2016..
@@ -100,6 +105,12 @@ public class Lexer {
             return;
         }
 
+        if (scanComment()) {
+            skipComment();
+            extractNextToken();
+            return;
+        }
+
         if (Character.isDigit(data[currPos])) {
             scanNumber();
             return;
@@ -121,6 +132,26 @@ public class Lexer {
         }
 
         throw new LexerException(String.format("Invalid character found: %c.", data[currPos]));
+    }
+
+    private void skipComment() {
+        int tempPos = currPos;
+        while(tempPos < data.length && !(data[tempPos] == '\r' || data[tempPos] == '\n')) {
+            tempPos++;
+        }
+
+        currPos = tempPos;
+    }
+
+    private boolean scanComment() {
+        if(currPos < data.length && data[currPos] == '-') {
+            int tempPos = currPos + 1;
+            if(tempPos < data.length && data[tempPos] == '-') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void scanNumber() {
