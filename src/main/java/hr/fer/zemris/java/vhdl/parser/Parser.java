@@ -256,11 +256,7 @@ public class Parser {
 		lexer.nextToken();
 
 		Token token = lexer.getCurrentToken();
-		if (!(isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR))) {
-			Mappable test = parseSignal();
-		} else {
-			lexer.nextToken();
-		}
+		testMappable();
 
 		EntityMap map;
 		if (isTokenOfType(TokenType.COMMA)) {
@@ -281,6 +277,30 @@ public class Parser {
 		lexer.nextToken();
 
 		return map;
+	}
+
+	private void testMappable() {
+		String name = (String) currentValue();
+		lexer.nextToken();
+
+		if (!isTokenOfType(TokenType.OPEN_PARENTHESES)) {
+
+			return;
+		} else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
+			lexer.nextToken();
+
+			checkType(TokenType.NUMBER, "Expected number as index.");
+			int position = (int) currentValue();
+			lexer.nextToken();
+
+			checkType(TokenType.CLOSED_PARENTHESES, "Expected )");
+			lexer.nextToken();
+
+			return;
+
+		} else {
+			throw new ParserException("Invalid signal type.");
+		}
 	}
 
 	private Map<String, Mappable> parseAssociativeMapping() {

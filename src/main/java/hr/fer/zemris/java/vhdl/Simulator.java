@@ -57,7 +57,7 @@ public class Simulator implements Runnable {
 			long delay = s.getDelay();
 
 
-			environment.getQueue().addEvent(new Assign(sig, value, position, time, delay));
+			environment.getQueue().addEvent(new Assign(sig, value, position, time + 1, delay));
 
 		});
 	}
