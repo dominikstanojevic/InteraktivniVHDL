@@ -1,42 +1,52 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
-import hr.fer.zemris.java.vhdl.models.Table;
-import hr.fer.zemris.java.vhdl.models.declarable.Declarable;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
-import hr.fer.zemris.java.vhdl.models.values.Vector;
+import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
-import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.SignalExpression;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpression;
 
 /**
  * Created by Dominik on 7.8.2016..
  */
-public class IndexerOperator extends SignalExpression{
-	private int position;
+public class IndexerOperator extends DeclarationExpression {
+    private VectorData data;
 
-	public IndexerOperator(Declarable id, int position) {
-		super(id);
+    public IndexerOperator(Declaration declaration, VectorData data) {
+        super(declaration);
 
-		this.position = position;
-	}
+        this.data = data;
+    }
 
-	public int getPosition() {
-		return position;
-	}
+    public VectorData getData() {
+        return data;
+    }
 
-	@Override
-	public Value evaluate(Table table, String label) {
-		Value value = super.evaluate(table, label);
+    @Override
+    public Value evaluate() {
+        throw new UnsupportedOperationException();
+    }
 
-		if(value instanceof Vector) {
-			return ((Vector) value).getLogicValue(position);
-		}
+    @Override
+    public Declaration getDeclaration() {
+        if (data.isValid(declaration)) {
+            if (data.getOrder() == null) {
+                return new Declaration(declaration.getLabel() + data.getStart());
+            } else {
+                return new Declaration(declaration.getLabel() + "sub", data);
+            }
+        } else {
+            throw new ParserException("Not valid.");
+        }
+    }
 
-		throw new ParserException("Vector expected in indexer operator.");
-	}
+    @Override
+    public boolean isValid() {
+        return data.isValid(declaration);
+    }
 
-	@Override
-	public Declaration getDeclaration() {
-		return super.getDeclaration().convertToScalar();
-	}
+    @Override
+    public int valueSize() {
+        return data.getSize();
+    }
 }

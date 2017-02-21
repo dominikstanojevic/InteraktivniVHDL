@@ -1,59 +1,59 @@
 package hr.fer.zemris.java.vhdl.parser.nodes;
 
-import hr.fer.zemris.java.vhdl.models.declarable.Port;
+import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by Dominik on 25.7.2016..
  */
 public class EntityNode {
-	private String name;
-	private Set<Port> declarations;
+    private String name;
+    private List<Declaration> declarations;
 
-	public EntityNode(String name) {
-		this.name = name;
-	}
+    public EntityNode(String name) {
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void addSignals(Set<Port> declarations) {
-		if (this.declarations == null) {
-			this.declarations = new LinkedHashSet<>();
-		}
+    public void addSignals(List<Declaration> declarations) {
+        if (this.declarations == null) {
+            this.declarations = new ArrayList<>();
+        }
 
-		this.declarations.addAll(declarations);
-	}
+        this.declarations.addAll(declarations);
+    }
 
-	public int numberOfSignals() {
-		return declarations.size();
-	}
+    public int numberOfSignals() {
+        return declarations.size();
+    }
 
-	public Set<Port> getDeclarations() {
-		return declarations != null ? declarations : Collections.emptySet();
-	}
+    public List<Declaration> getDeclarations() {
+        return declarations != null ? declarations : Collections.EMPTY_LIST;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-		EntityNode that = (EntityNode) o;
+        EntityNode that = (EntityNode) o;
 
-		return name.equals(that.name);
+        return name.equals(that.name);
 
-	}
+    }
 
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

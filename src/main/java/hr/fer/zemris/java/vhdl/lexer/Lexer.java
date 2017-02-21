@@ -1,7 +1,6 @@
 package hr.fer.zemris.java.vhdl.lexer;
 
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
-import hr.fer.zemris.java.vhdl.models.values.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,7 +178,7 @@ public class Lexer {
                 throw new LexerException("Constant not closed.");
             }
 
-            tokens.add(new Token(TokenType.CONSTANT, value));
+            tokens.add(new Token(TokenType.CONSTANT, value.valueArray()));
             return;
         }
 
@@ -194,7 +193,7 @@ public class Lexer {
         for (int i = 0; i + start < end; i++) {
             values[i] = LogicValue.getValue(data[i + start]);
         }
-        tokens.add(new Token(TokenType.CONSTANT_VECTOR, new Vector(values)));
+        tokens.add(new Token(TokenType.CONSTANT_VECTOR, values));
 
         //skipping "
         currPos++;

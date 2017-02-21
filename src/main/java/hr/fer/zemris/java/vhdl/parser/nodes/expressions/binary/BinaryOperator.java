@@ -1,10 +1,9 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
-import hr.fer.zemris.java.vhdl.models.Table;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
-import hr.fer.zemris.java.vhdl.models.values.Vector;
+import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
 import java.util.Objects;
@@ -24,9 +23,10 @@ public abstract class BinaryOperator extends Expression {
 		this.second = second;
 	}
 
-	protected Value calculate(LogicValue[][] valueTable, Table table, String label) {
-		Value first = this.first.evaluate(table, label);
-		Value second = this.second.evaluate(table, label);
+	protected Value calculate(LogicValue[][] valueTable) {
+		//TODO FIX
+		/*Value first = this.first.evaluate();
+		Value second = this.second.evaluate();
 
 		if (first instanceof LogicValue && second instanceof LogicValue) {
 			return valueTable[((LogicValue) first).ordinal()][((LogicValue) second).ordinal()];
@@ -56,11 +56,30 @@ public abstract class BinaryOperator extends Expression {
 			result[i] = table[firstValue.ordinal()][secondValue.ordinal()];
 		}
 
-		return new Vector(result);
+		return new Vector(result);*/
+		return new Value(null, null);
 	}
 
 	@Override
 	public Declaration getDeclaration() {
 		return first.getDeclaration();
+	}
+
+	@Override
+	public boolean isValid() {
+		int firstSize = first.valueSize();
+		int secondSize = second.valueSize();
+
+		return firstSize == secondSize;
+	}
+
+	@Override
+	public int valueSize() {
+		int firstSize = first.valueSize();
+		if(firstSize != second.valueSize()) {
+			throw new ParserException("First and second arugment are not of the same size.");
+		}
+
+		return firstSize;
 	}
 }

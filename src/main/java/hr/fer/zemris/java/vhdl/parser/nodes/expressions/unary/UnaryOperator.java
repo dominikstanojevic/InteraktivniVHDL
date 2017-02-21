@@ -20,4 +20,14 @@ public abstract class UnaryOperator extends Expression {
 	public Declaration getDeclaration() {
 		return expression.getDeclaration();
 	}
+
+	@Override
+	public boolean isValid() {
+		return expression.isValid();
+	}
+
+	@Override
+	public int valueSize() {
+		return expression.valueSize();
+	}
 }

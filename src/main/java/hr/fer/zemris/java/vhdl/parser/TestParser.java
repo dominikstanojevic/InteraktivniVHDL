@@ -12,12 +12,14 @@ import java.nio.file.Paths;
  */
 public class TestParser {
 
-	public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 
-		String program = new String(Files.readAllBytes(Paths.get("test.txt")),
-				StandardCharsets.UTF_8);
-		
-		Lexer lexer = new Lexer(program);
-		new Parser(lexer);
-	}
+        String program =
+                new String(Files.readAllBytes(Paths.get("D:\\fer\\Java\\InteraktivniVHDL\\testovi\\Adder_1_bit.vhdl")),
+                        StandardCharsets.UTF_8);
+
+        Lexer lexer = new Lexer(program);
+        Parser parser = new Parser(lexer);
+        parser.getProgramNode();
+    }
 }

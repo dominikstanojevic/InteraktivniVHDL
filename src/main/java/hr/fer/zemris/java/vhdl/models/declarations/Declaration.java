@@ -1,44 +1,53 @@
 package hr.fer.zemris.java.vhdl.models.declarations;
 
-import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.Type;
+import hr.fer.zemris.java.vhdl.models.values.VectorData;
 
 /**
- * Created by Dominik on 25.8.2016..
+ * Created by Dominik on 21.2.2017..
  */
-public interface Declaration {
-	Value.TypeOf getTypeOf();
-	int size();
-	Declaration convertToScalar();
+public class Declaration {
+    private String label;
+    private Type type;
+    private PortType portType;
+    private VectorData vectorData;
 
-	static boolean checkMapping(
-			PortDeclaration d1, Declaration d2) {
+    private Declaration(String label, Type type, PortType portType, VectorData vectorData) {
+        this.label = label;
+        this.type = type;
+        this.portType = portType;
+        this.vectorData = vectorData;
+    }
 
-		if (d1 == null) {
-			return false;
-		}
+    public Declaration(String label) {
+        this(label, Type.STD_LOGIC, null, null);
+    }
 
-		if (d2 == null) {
-			return true;
-		}
+    public Declaration(String label, PortType portType) {
+        this(label, Type.STD_LOGIC, portType, null);
+    }
 
-		if (d2 instanceof PortDeclaration) {
-			if (d1.getPortType() != ((PortDeclaration) d2).getPortType()) {
-				return false;
-			}
-		}
+    public Declaration(String label, VectorData vectorData) {
+        this(label, Type.VECTOR_STD_LOGIC, null, vectorData);
+    }
 
-		if (d1.getTypeOf() != d2.getTypeOf()) {
-			return false;
-		}
+    public Declaration(String label, PortType portType, VectorData vectorData) {
+        this(label, Type.VECTOR_STD_LOGIC, portType, vectorData);
+    }
 
-		if (d1.getTypeOf() == Value.TypeOf.STD_LOGIC_VECTOR) {
-			if (d1.size() != d2.size()) {
-				return false;
-			}
-		}
+    public String getLabel() {
+        return label;
+    }
 
-		return true;
-	}
+    public Type getType() {
+        return type;
+    }
 
-	Integer getStart();
+    public PortType getPortType() {
+        return portType;
+    }
+
+    public VectorData getVectorData() {
+        return vectorData;
+    }
 }
