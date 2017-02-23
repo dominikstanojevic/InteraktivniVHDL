@@ -1,15 +1,18 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.AddressExpression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
+import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mappable;
 
 import java.util.Objects;
 
 /**
  * Created by Dominik on 22.8.2016..
  */
-public class DeclarationExpression extends Expression {
+public class DeclarationExpression extends Expression implements Mappable {
     protected Declaration declaration;
 
     public DeclarationExpression(Declaration declaration) {
@@ -36,5 +39,10 @@ public class DeclarationExpression extends Expression {
     @Override
     public Value evaluate() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Expression prepareExpression(Model model) {
+        return new AddressExpression(model.getAddress(declaration));
     }
 }

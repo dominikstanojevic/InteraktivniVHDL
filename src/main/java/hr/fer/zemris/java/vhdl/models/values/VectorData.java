@@ -12,7 +12,7 @@ public class VectorData {
     private int start;
 
     public VectorData(int first, VectorOrder order, int second) {
-        if (!valid(first, order, second)) {
+        if (order != null && !valid(first, order, second)) {
             throw new ParserException("Vector data is not valid.");
         }
 
@@ -42,9 +42,10 @@ public class VectorData {
     }
 
     public boolean isValid(Declaration declaration) {
-        if (declaration.getType() != Type.VECTOR_STD_LOGIC) {
+        //TODO: FIX (MAYBE)
+        /* if (declaration.getType() != Type.VECTOR_STD_LOGIC) {
             throw new ParserException("Invalid type.");
-        }
+        }*/
 
         VectorData other = declaration.getVectorData();
         int end;
@@ -68,4 +69,53 @@ public class VectorData {
         }
     }
 
+    public Offset calculateOffset(VectorData other) {
+        int start = Math.abs(this.start - other.start);
+        int end = Math.abs(this.size - other.size) - start;
+        return new Offset(start, end);
+    }
+
+    public Offset calculateOffset(int pos) {
+        int start = Math.abs(this.start - pos);
+        int end = Math.abs(this.size - 1) - start;
+        return new Offset(start, end);
+    }
+
+    public VectorData getFromOffset(Offset offset) {
+        VectorOrder newOrder = order;
+        int newStart;
+        int newEnd;
+        if (order == VectorOrder.TO) {
+            newStart = start + offset.start;
+            newEnd = (start + size - 1) - offset.end;
+        } else if (order == VectorOrder.DOWNTO) {
+            newStart = start - offset.start;
+            newEnd = (start - size + 1) + offset.end;
+        } else {
+            newStart = start;
+            newEnd = start;
+        }
+
+        if (newStart == newEnd) {
+            newOrder = null;
+        }
+        return new VectorData(newStart, newOrder, newEnd);
+    }
+
+    public VectorData getAddress(VectorData other, int start) {
+        Offset offset = calculateOffset(other);
+        VectorData address = getFromOffset(offset);
+        address.start = start + offset.start;
+        return address;
+    }
+
+    public static class Offset {
+        private int start;
+        private int end;
+
+        public Offset(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
 }

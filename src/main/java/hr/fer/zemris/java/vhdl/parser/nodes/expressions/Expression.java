@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 
@@ -11,4 +12,6 @@ public abstract class Expression {
 	public abstract Declaration getDeclaration();
 	public abstract boolean isValid();
 	public abstract int valueSize();
+
+	public abstract Expression prepareExpression(Model model);
 }

@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
@@ -45,5 +46,10 @@ public class NotOperator extends UnaryOperator {
     @Override
     public Declaration getDeclaration() {
         return expression.getDeclaration();
+    }
+
+    @Override
+    public Expression prepareExpression(Model model) {
+        return new NotOperator(expression.prepareExpression(model));
     }
 }

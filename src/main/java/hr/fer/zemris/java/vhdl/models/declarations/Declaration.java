@@ -12,6 +12,8 @@ public class Declaration {
     private PortType portType;
     private VectorData vectorData;
 
+    private static final VectorData SCALAR = new VectorData(0, null, 0);
+
     private Declaration(String label, Type type, PortType portType, VectorData vectorData) {
         this.label = label;
         this.type = type;
@@ -20,11 +22,11 @@ public class Declaration {
     }
 
     public Declaration(String label) {
-        this(label, Type.STD_LOGIC, null, null);
+        this(label, Type.STD_LOGIC, null, SCALAR);
     }
 
     public Declaration(String label, PortType portType) {
-        this(label, Type.STD_LOGIC, portType, null);
+        this(label, Type.STD_LOGIC, portType, SCALAR);
     }
 
     public Declaration(String label, VectorData vectorData) {
@@ -49,5 +51,9 @@ public class Declaration {
 
     public VectorData getVectorData() {
         return vectorData;
+    }
+
+    public int size() {
+        return vectorData == null ? 1 : vectorData.getSize();
     }
 }

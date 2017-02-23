@@ -1,15 +1,17 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Type;
 import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mappable;
 
 /**
  * Created by Dominik on 29.7.2016..
  */
-public class Constant extends Expression {
+public class Constant extends Expression implements Mappable {
     private Value value;
 
     public Constant(LogicValue[] value, TokenType type) {
@@ -22,6 +24,7 @@ public class Constant extends Expression {
 
         this.value = new Value(value, valueType);
     }
+
 
     public LogicValue[] getValue() {
         return value.getValue();
@@ -45,5 +48,10 @@ public class Constant extends Expression {
     @Override
     public int valueSize() {
         return value.getValue().length;
+    }
+
+    @Override
+    public Expression prepareExpression(Model model) {
+        return this;
     }
 }

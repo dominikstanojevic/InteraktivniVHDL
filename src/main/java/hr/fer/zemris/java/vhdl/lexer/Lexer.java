@@ -135,7 +135,7 @@ public class Lexer {
 
     private void skipComment() {
         int tempPos = currPos;
-        while(tempPos < data.length && !(data[tempPos] == '\r' || data[tempPos] == '\n')) {
+        while (tempPos < data.length && !(data[tempPos] == '\r' || data[tempPos] == '\n')) {
             tempPos++;
         }
 
@@ -143,9 +143,9 @@ public class Lexer {
     }
 
     private boolean scanComment() {
-        if(currPos < data.length && data[currPos] == '-') {
+        if (currPos < data.length && data[currPos] == '-') {
             int tempPos = currPos + 1;
-            if(tempPos < data.length && data[tempPos] == '-') {
+            if (tempPos < data.length && data[tempPos] == '-') {
                 return true;
             }
         }
@@ -198,7 +198,6 @@ public class Lexer {
         //skipping "
         currPos++;
     }
-
 
     private boolean isConstant(char c) {
         return c == '\'' || c == '"';
@@ -288,5 +287,9 @@ public class Lexer {
         }
 
         return false;
+    }
+
+    public Token goBack(int offset) {
+        return tokens.get(tokens.size() - 1 - offset);
     }
 }

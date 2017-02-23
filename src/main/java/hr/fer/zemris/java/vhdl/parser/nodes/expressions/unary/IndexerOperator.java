@@ -1,9 +1,12 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.AddressExpression;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpression;
 
 /**
@@ -30,11 +33,7 @@ public class IndexerOperator extends DeclarationExpression {
     @Override
     public Declaration getDeclaration() {
         if (data.isValid(declaration)) {
-            if (data.getOrder() == null) {
-                return new Declaration(declaration.getLabel() + data.getStart());
-            } else {
-                return new Declaration(declaration.getLabel() + "sub", data);
-            }
+            return new Declaration(declaration.getLabel(), data);
         } else {
             throw new ParserException("Not valid.");
         }
@@ -48,5 +47,11 @@ public class IndexerOperator extends DeclarationExpression {
     @Override
     public int valueSize() {
         return data.getSize();
+    }
+
+    @Override
+    public Expression prepareExpression(Model model) {
+        VectorData address = model.getAddress(getDeclaration());
+        return new AddressExpression(address);
     }
 }

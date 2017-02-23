@@ -5,11 +5,11 @@ entity VelikiDek2 is port (
 end VelikiDek2;
 
 architecture strukturna of VelikiDek2 is
-   signal ez1, ez2: std_logic;
+   signal ez: std_logic_vector(1 to 2);
 begin
 
-   d0: entity work.MaliDek2 port map (a(1), e, ez1, ez2);
-   d1: entity work.MaliDek2 port map (a(0), ez1, i(0), i(1));
-   d2: entity work.MaliDek2 port map (a(0), ez2, i(2), i(3));
+   d0: entity work.MaliDek2 port map (a(1), e, ez);
+   d1: entity work.MaliDek2 port map (a(0), ez(1), i(0 to 1));
+   d2: entity work.MaliDek2 port map (a(0), ez(2), i(2 to 3));
 
 end strukturna;

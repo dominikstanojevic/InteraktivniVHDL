@@ -19,10 +19,14 @@ import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpres
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary.IndexerOperator;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.Statement;
+import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mappable;
+import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mapping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -167,8 +171,7 @@ public class Parser {
     }
 
     private Statement parseArchLine() {
-        //TODO fix after mapping
-        Statement statement = null;
+        Statement statement;
         Token token = lexer.getCurrentToken();
 
         String label = parseLabel();
@@ -180,32 +183,14 @@ public class Parser {
         }
 
         if (isTokenOfType(TokenType.IDENT)) {
-            String id = (String) currentValue();
+            DeclarationExpression indexer = parseSignal();
+
+            checkType(TokenType.ASSIGN, "Assignment expected.");
             lexer.nextToken();
 
-            if (!table.isDeclared(id)) {
-                throw new ParserException("Undefined signal: " + id + ". ");
-            }
-            Declaration portDeclaration = table.getDeclaration(id);
-
-            if (isTokenOfType(TokenType.ASSIGN)) {
-                lexer.nextToken();
-
-                ExpressionData expression = parseExpression(portDeclaration);
-                statement = new SetStatement(label, new DeclarationExpression(table.getDeclaration(id)),
-                        expression.expression, expression.sensitivity, expression.delay);
-            } else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
-                DeclarationExpression indexer = parseSignal();
-
-                checkType(TokenType.ASSIGN, "Assignment expected.");
-                lexer.nextToken();
-
-                ExpressionData expression = parseExpression(indexer.getDeclaration());
-                statement = new SetStatement(label, indexer, expression.expression, expression.sensitivity,
-                        expression.delay);
-            } else {
-                throw new ParserException("Expected signal or signal vector.");
-            }
+            ExpressionData expression = parseExpression(indexer.getDeclaration());
+            statement =
+                    new SetStatement(label, indexer, expression.expression, expression.sensitivity, expression.delay);
         } else if (isTokenOfType(TokenType.KEYWORD) && currentValue().equals("entity")) {
             lexer.nextToken();
 
@@ -213,8 +198,7 @@ public class Parser {
                 throw new ParserException("Port map statement must contain label.");
             }
 
-            //TODO: MAPPING
-            //statement = parseMapping(label);
+            statement = parseMapping(label);
         } else {
             throw new ParserException("Expected assignment or mapping");
         }
@@ -222,7 +206,7 @@ public class Parser {
         return statement;
     }
 
-    /*private EntityMap parseMapping(String label) {
+    private Statement parseMapping(String label) {
         checkType(TokenType.KEYWORD, "work", "Expected keyword WORK.");
         lexer.nextToken();
 
@@ -245,17 +229,17 @@ public class Parser {
         Token token = lexer.getCurrentToken();
         testMappable();
 
-        EntityMap map;
+        Statement map;
         if (isTokenOfType(TokenType.COMMA)) {
             lexer.seek(token);
             List<Mappable> signals = parsePositionalMapping();
 
-            map = new PositionalMap(label, id, signals);
+            map = new Mapping.Positional(label, id, signals);
         } else if (isTokenOfType(TokenType.MAP)) {
             lexer.seek(token);
             Map<String, Mappable> signals = parseAssociativeMapping();
 
-            map = new AssociativeMap(label, id, signals);
+            map = new Mapping.Associative(label, id, signals);
         } else {
             throw new ParserException("Invalid port map statement");
         }
@@ -304,7 +288,7 @@ public class Parser {
                 signals.put(signal1, null);
                 lexer.nextToken();
             } else if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
-                signals.put(signal1, new Constant((Value) currentValue()));
+                signals.put(signal1, new Constant((LogicValue[]) currentValue(), lexer.getCurrentToken().getType()));
                 lexer.nextToken();
             } else {
                 signals.put(signal1, parseSignal());
@@ -332,7 +316,7 @@ public class Parser {
                 signals.add(null);
                 lexer.nextToken();
             } else if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
-                signals.add(new Constant((Value) currentValue()));
+                signals.add(new Constant((LogicValue[]) currentValue(), lexer.getCurrentToken().getType()));
                 lexer.nextToken();
             } else {
                 signals.add(parseSignal());
@@ -350,7 +334,7 @@ public class Parser {
         }
 
         return signals;
-    }*/
+    }
 
     private String parseLabel() {
         if (!isTokenOfType(TokenType.IDENT)) {
@@ -797,7 +781,7 @@ public class Parser {
         public ExpressionData(
                 Expression expression, Set<Declaration> sensitivity, long delay) {
             this.expression = expression;
-            if(!expression.isValid()) {
+            if (!expression.isValid()) {
                 throw new ParserException("Expression is not valid.");
             }
 

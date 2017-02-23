@@ -1,32 +1,34 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 /**
  * Created by Dominik on 29.7.2016..
  */
 public abstract class BinaryOperator extends Expression {
-	protected Expression first;
-	protected Expression second;
+    protected Expression first;
+    protected Expression second;
 
-	public BinaryOperator(Expression first, Expression second) {
-		Objects.requireNonNull(first, "First expression cannot be null.");
-		Objects.requireNonNull(second, "Second expression cannot be null.");
+    public BinaryOperator(Expression first, Expression second) {
+        Objects.requireNonNull(first, "First expression cannot be null.");
+        Objects.requireNonNull(second, "Second expression cannot be null.");
 
-		this.first = first;
-		this.second = second;
-	}
+        this.first = first;
+        this.second = second;
+    }
 
-	protected Value calculate(LogicValue[][] valueTable) {
-		//TODO FIX
-		/*Value first = this.first.evaluate();
-		Value second = this.second.evaluate();
+    protected Value calculate(LogicValue[][] valueTable) {
+        //TODO FIX
+        /*Value first = this.first.evaluate();
+        Value second = this.second.evaluate();
 
 		if (first instanceof LogicValue && second instanceof LogicValue) {
 			return valueTable[((LogicValue) first).ordinal()][((LogicValue) second).ordinal()];
@@ -57,29 +59,39 @@ public abstract class BinaryOperator extends Expression {
 		}
 
 		return new Vector(result);*/
-		return new Value(null, null);
-	}
+        return new Value(null, null);
+    }
 
-	@Override
-	public Declaration getDeclaration() {
-		return first.getDeclaration();
-	}
+    @Override
+    public Declaration getDeclaration() {
+        return first.getDeclaration();
+    }
 
-	@Override
-	public boolean isValid() {
-		int firstSize = first.valueSize();
-		int secondSize = second.valueSize();
+    @Override
+    public boolean isValid() {
+        int firstSize = first.valueSize();
+        int secondSize = second.valueSize();
 
-		return firstSize == secondSize;
-	}
+        return firstSize == secondSize;
+    }
 
-	@Override
-	public int valueSize() {
-		int firstSize = first.valueSize();
-		if(firstSize != second.valueSize()) {
-			throw new ParserException("First and second arugment are not of the same size.");
-		}
+    @Override
+    public int valueSize() {
+        int firstSize = first.valueSize();
+        if (firstSize != second.valueSize()) {
+            throw new ParserException("First and second arugment are not of the same size.");
+        }
 
-		return firstSize;
-	}
+        return firstSize;
+    }
+
+    @Override
+    public Expression prepareExpression(Model model) {
+        try {
+            return this.getClass().getConstructor(Expression.class, Expression.class)
+                    .newInstance(first.prepareExpression(model), second.prepareExpression(model));
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException("Ovo je greška.");
+        }
+    }
 }
