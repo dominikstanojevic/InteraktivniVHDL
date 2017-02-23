@@ -1,8 +1,9 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Memory;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
-import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.AddressExpression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mappable;
@@ -37,7 +38,7 @@ public class DeclarationExpression extends Expression implements Mappable {
     }
 
     @Override
-    public Value evaluate() {
+    public LogicValue[] evaluate(Memory memory) {
         throw new UnsupportedOperationException();
     }
 

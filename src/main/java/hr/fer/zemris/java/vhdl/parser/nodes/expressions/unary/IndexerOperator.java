@@ -1,8 +1,9 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Memory;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
-import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.AddressExpression;
@@ -14,11 +15,17 @@ import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpres
  */
 public class IndexerOperator extends DeclarationExpression {
     private VectorData data;
+    private Declaration declaration;
 
     public IndexerOperator(Declaration declaration, VectorData data) {
         super(declaration);
 
         this.data = data;
+        if (data.isValid(declaration.getVectorData())) {
+            this.declaration = new Declaration(declaration.getLabel(), data);
+        } else {
+            throw new ParserException("Not valid.");
+        }
     }
 
     public VectorData getData() {
@@ -26,17 +33,13 @@ public class IndexerOperator extends DeclarationExpression {
     }
 
     @Override
-    public Value evaluate() {
+    public LogicValue[] evaluate(Memory memory) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Declaration getDeclaration() {
-        if (data.isValid(declaration.getVectorData())) {
-            return new Declaration(declaration.getLabel(), data);
-        } else {
-            throw new ParserException("Not valid.");
-        }
+        return declaration;
     }
 
     @Override
@@ -51,7 +54,7 @@ public class IndexerOperator extends DeclarationExpression {
 
     @Override
     public Expression prepareExpression(Model model) {
-        int[] address = model.getAddresses(getDeclaration());
+        Integer[] address = model.getAddresses(getDeclaration());
         return new AddressExpression(address);
     }
 }

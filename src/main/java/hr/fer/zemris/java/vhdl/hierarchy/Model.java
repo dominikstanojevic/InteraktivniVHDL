@@ -1,10 +1,13 @@
 package hr.fer.zemris.java.vhdl.hierarchy;
 
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
+import hr.fer.zemris.java.vhdl.models.declarations.PortType;
 import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.models.values.VectorOrder;
+import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.AddressStatement;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,7 +20,7 @@ import java.util.Set;
 public class Model {
     private String name;
     private String label;
-    private Map<Declaration, Integer> addresses = new HashMap<>();
+    private Map<Declaration, Integer> addresses = Collections.EMPTY_MAP;
     private Map<Declaration, Declaration> mapped;
     private Set<AddressStatement> statements;
     private Model parent;
@@ -45,7 +48,7 @@ public class Model {
     }
 
     public void addSignal(Declaration declaration, Integer id) {
-        if (addresses == null) {
+        if (addresses.isEmpty()) {
             addresses = new HashMap<>();
         }
 
@@ -89,34 +92,21 @@ public class Model {
         statements.add(statement);
     }
 
-    public int[] getAddresses(Declaration declaration) {
+    public Integer[] getAddresses(Declaration declaration) {
         VectorData data = declaration.getVectorData();
-        int[] addresses = new int[data.getSize()];
+        Integer[] addresses = new Integer[data.getSize()];
         for (int i = 0, size = data.getSize(), start = data.getStart(); i < size; i++) {
             int index = data.getOrder() == VectorOrder.TO ? start + i : start - i;
             addresses[i] = findSignal(this, declaration.getLabel(), new VectorData(index, null, index),
                     new VectorData.Offset(0, 0));
+            if(declaration.getPortType() == PortType.IN && addresses[i] == null) {
+                throw new ParserException("Cannot assign null address to port of type IN");
+            }
         }
         return addresses;
     }
 
-   /* private int getAddress(String label, VectorData data) {
-        Optional<Declaration> origin = addresses.keySet().stream().filter(d -> d.getLabel().equals(label)).findAny();
-        if (origin.isPresent()) {
-            return origin.get().getVectorData().getAddress(data, addresses.get(origin.get())).getStart();
-        } else {
-            origin = mapped.keySet().stream()
-                    .filter(d -> d.getLabel().equals((label)) && data.isValid(d.getVectorData())).findAny();
-            if (!origin.isPresent()) {
-                throw new RuntimeException("Cannot find declaration.");
-            }
-
-            VectorData.Offset offset = origin.get().getVectorData().calculateOffset(data);
-            return findSignal(this.parent, mapped.get(origin.get()), offset);
-        }
-    }
-*/
-    private int findSignal(Model model, String label, VectorData data, VectorData.Offset offset) {
+    private Integer findSignal(Model model, String label, VectorData data, VectorData.Offset offset) {
         VectorData newData = data.getFromOffset(offset);
 
         Optional<Declaration> origin =
@@ -127,7 +117,11 @@ public class Model {
             origin = model.mapped.keySet().stream()
                     .filter(d -> d.getLabel().equals((label)) && newData.isValid(d.getVectorData())).findAny();
             if (!origin.isPresent()) {
-                throw new RuntimeException("Cannot find declaration.");
+                throw new RuntimeException("Jebiga");
+            }
+
+            if(model.mapped.get(origin.get()) == null) {
+                return null;
             }
 
             offset = origin.get().getVectorData().calculateOffset(newData);

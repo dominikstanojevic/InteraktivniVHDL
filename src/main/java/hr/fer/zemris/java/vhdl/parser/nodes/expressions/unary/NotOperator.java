@@ -1,47 +1,41 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Memory;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
-import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Dominik on 29.7.2016..
  */
 public class NotOperator extends UnaryOperator {
-    private static LogicValue[] values = new LogicValue[] {
-            LogicValue.ONE, LogicValue.ZERO, LogicValue.UNINITIALIZED };
+    private static final Map<LogicValue, LogicValue> negation = new HashMap<>();
+
+    static {
+        negation.put(LogicValue.ZERO, LogicValue.ONE);
+        negation.put(LogicValue.ONE, LogicValue.ZERO);
+        negation.put(LogicValue.UNINITIALIZED, LogicValue.UNINITIALIZED);
+    }
 
     public NotOperator(Expression expression) {
         super(expression);
     }
 
     @Override
-    public Value evaluate() {
-        Value value = expression.evaluate();
+    public LogicValue[] evaluate(Memory memory) {
+        LogicValue[] value = expression.evaluate(memory);
 
-        //TODO: FIX
-        /*if (value instanceof LogicValue) {
-            return values[((LogicValue) value).ordinal()];
-		} else {
-			return evaluateVector((Vector) value);
-		}*/
+        LogicValue[] result = new LogicValue[value.length];
+        for (int i = 0; i < value.length; i++) {
+            result[i] = NotOperator.negation.get(value[i]);
+        }
 
         return value;
     }
-
-    //TODO FIX
-	/*private Value evaluateVector(Vector vector) {
-		LogicValue[] values = vector.getValue();
-		LogicValue[] result = new LogicValue[values.length];
-
-		for (int i = 0; i < values.length; i++) {
-			result[i] = NotOperator.values[values[i].ordinal()];
-		}
-
-		return new Vector(result);
-	}*/
 
     @Override
     public Declaration getDeclaration() {

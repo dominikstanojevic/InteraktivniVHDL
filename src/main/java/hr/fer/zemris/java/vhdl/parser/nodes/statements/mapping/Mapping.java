@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping;
 
+import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.Statement;
 
 import java.util.List;
@@ -38,18 +39,18 @@ public abstract class Mapping extends Statement {
     }
 
     public static class Associative extends Mapping {
-        private Map<String, Mappable> mapped;
+        private Map<Declaration, Mappable> mapped;
 
         private Associative(String label, String entity) {
             super(label, entity);
         }
 
-        public Associative(String label, String entity, Map<String, Mappable> mapped) {
+        public Associative(String label, String entity, Map<Declaration, Mappable> mapped) {
             this(label, entity);
             this.mapped = mapped;
         }
 
-        public Map<String, Mappable> getMapped() {
+        public Map<Declaration, Mappable> getMapped() {
             return mapped;
         }
     }

@@ -1,21 +1,22 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Memory;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
-import hr.fer.zemris.java.vhdl.models.values.Value;
+import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 
 /**
  * Created by Dominik on 22.2.2017..
  */
 public class AddressExpression extends Expression {
-    private int[] address;
+    private Integer[] address;
 
-    public AddressExpression(int[] address) {
+    public AddressExpression(Integer[] address) {
         this.address = address;
     }
 
     @Override
-    public Value evaluate() {
+    public LogicValue[] evaluate(Memory memory) {
         return null;
     }
 

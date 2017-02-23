@@ -3,8 +3,12 @@ package hr.fer.zemris.java.vhdl.hierarchy;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.declarations.PortType;
+import hr.fer.zemris.java.vhdl.models.values.VectorData;
+import hr.fer.zemris.java.vhdl.models.values.VectorOrder;
 import hr.fer.zemris.java.vhdl.parser.Parser;
+import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.ProgramNode;
+import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Constant;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.AddressStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
@@ -18,8 +22,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominik on 21.2.2017..
@@ -58,27 +62,85 @@ public class HierarchyBuilder {
             List<Declaration> mappedTo = childNode.getEntity().getDeclarations();
             if (mapping instanceof Mapping.Positional) {
                 createPositionalMapping(child, ((Mapping.Positional) mapping).getMapped(), mappedTo);
+            } else {
+                createAssociativeMapping(child, ((Mapping.Associative) mapping).getMapped(), mappedTo);
             }
 
             child.setParent(model);
             model.addModel(child);
 
-           build(child);
+            build(child);
+        }
+    }
+
+    private void createAssociativeMapping(Model child, Map<Declaration, Mappable> mapped, List<Declaration> mappedTo) {
+        Set<Declaration> m = mapped.keySet();
+        for (Declaration origin : mappedTo) {
+            VectorData originData = origin.getVectorData();
+            for (int i = 0, size = originData.getSize(), start = originData.getStart(); i < size; i++) {
+                int index = originData.getOrder() == VectorOrder.TO ? start + i : start - i;
+                VectorData newData = new VectorData(index, null, index);
+                List<Declaration> valid = m.stream()
+                        .filter(d -> d.getLabel().equals(origin.getLabel()) && newData.isValid(d.getVectorData()))
+                        .collect(Collectors.toList());
+                PortType portType = origin.getPortType();
+                if ((portType == PortType.IN && valid.size() != 1) || (portType == PortType.OUT && valid.size() > 1)) {
+                    throw new ParserException("Invalid number of mappings for " + origin.getLabel() + ".");
+                }
+
+                if (valid.size() == 1 && mapped.get(valid.get(0)) != null) {
+                    Declaration dest = valid.get(0);
+                    Declaration map = ((Expression) mapped.get(dest)).getDeclaration();
+                    if (map.getPortType() != null && map.getPortType() != origin.getPortType()) {
+                        throw new RuntimeException(
+                                "Port " + origin.getLabel() + "must be of mode " + origin.getPortType().name());
+                    }
+                    if (mapped.get(dest) instanceof Constant) {
+                        if (origin.getPortType() == PortType.OUT) {
+                            throw new ParserException("Cannot assign constant to port of mode OUT.");
+                        }
+                        int define = memory.define(((Constant) mapped.get(dest)).getValues());
+                        child.addSignal(origin, define);
+                    }
+                    child.addMapped(dest, map);
+                } else {
+                    if (portType != PortType.OUT) {
+                        throw new RuntimeException();
+                    }
+
+                    child.addMapped(new Declaration(origin.getLabel(), PortType.OUT, newData), null);
+                }
+            }
         }
     }
 
     private void createPositionalMapping(Model child, List<Mappable> mapped, List<Declaration> mappedTo) {
-        long mappedSize = mapped.stream().filter(Objects::nonNull).count();
+        long mappedSize = mapped.size();
         long mappedToSize = mappedTo.stream().filter(d -> d.getPortType() == PortType.IN).count();
         if (mappedSize < mappedToSize) {
             throw new RuntimeException("Invalid number of mapped elements.");
         }
 
-        for (int i = 0; i < mappedSize; i++) {
+        for (int i = 0, size = mappedTo.size(); i < size; i++) {
             Declaration origin = mappedTo.get(i);
-            Declaration map = ((Expression) mapped.get(i)).getDeclaration();
-            checkMapping(origin, map);
-            child.addMapped(origin, map);
+            if (i < mappedSize && mapped.get(i) != null) {
+                Declaration map = ((Expression) mapped.get(i)).getDeclaration();
+                checkMapping(origin, map);
+                if (mapped.get(i) instanceof Constant) {
+                    if (origin.getPortType() == PortType.OUT) {
+                        throw new ParserException("Cannot assign constant to port of mode OUT.");
+                    }
+                    int start = memory.define(((Constant) mapped.get(i)).getValues());
+                    child.addSignal(origin, start);
+                } else {
+                    child.addMapped(origin, map);
+                }
+            } else {
+                if (origin.getPortType() != PortType.OUT) {
+                    throw new ParserException("Cannot have open port of mode IN.");
+                }
+                child.addMapped(origin, null);
+            }
         }
     }
 
@@ -141,7 +203,7 @@ public class HierarchyBuilder {
     }
 
     public static void main(String[] args) throws IOException {
-        String program = new String(Files.readAllBytes(Paths.get("VelikiDek2.vhdl")), StandardCharsets.UTF_8);
+        String program = new String(Files.readAllBytes(Paths.get("Adder_4_bit.vhdl")), StandardCharsets.UTF_8);
 
         Lexer lexer = new Lexer(program);
         Parser parser = new Parser(lexer);

@@ -5,6 +5,8 @@ import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpression;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,12 +16,12 @@ import java.util.Set;
 public class SetStatement extends Statement {
     private DeclarationExpression declarable;
     private Expression expression;
-    private Set<Declaration> sensitivity;
+    private Set<DeclarationExpression> sensitivity;
     private long delay;
 
     public SetStatement(
-            String label, DeclarationExpression declarable, Expression expression, Set<Declaration> sensitivity,
-            long delay) {
+            String label, DeclarationExpression declarable, Expression expression,
+            Set<DeclarationExpression> sensitivity, long delay) {
         super(label);
 
         Objects.requireNonNull(declarable, "PortDeclaration cannot be null");
@@ -39,17 +41,25 @@ public class SetStatement extends Statement {
         return expression;
     }
 
-    public Set<Declaration> getSensitivity() {
-        return sensitivity;
-    }
-
     public long getDelay() {
         return delay;
     }
 
     public AddressStatement prepareStatement(Model model) {
-        int[] address = model.getAddresses(declarable.getDeclaration());
+        Integer[] address = model.getAddresses(declarable.getDeclaration());
         Expression expression = this.expression.prepareExpression(model);
-        return new AddressStatement(address, expression, null, delay);
+        Set<Integer> sensitivity = mapSensitivityToAddresses(model);
+        return new AddressStatement(address, expression, sensitivity, delay);
+    }
+
+    private Set<Integer> mapSensitivityToAddresses(Model model) {
+        Set<Integer> sensitivity = new HashSet<>();
+        for (DeclarationExpression e : this.sensitivity) {
+            Declaration declaration = e.getDeclaration();
+            Integer[] addresses = model.getAddresses(declaration);
+            sensitivity.addAll(Arrays.asList(addresses));
+        }
+
+        return sensitivity;
     }
 }

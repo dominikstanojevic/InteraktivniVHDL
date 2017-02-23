@@ -56,4 +56,6 @@ public class Declaration {
     public int size() {
         return vectorData == null ? 1 : vectorData.getSize();
     }
+
+
 }

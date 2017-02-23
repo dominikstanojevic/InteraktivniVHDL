@@ -237,7 +237,7 @@ public class Parser {
             map = new Mapping.Positional(label, id, signals);
         } else if (isTokenOfType(TokenType.MAP)) {
             lexer.seek(token);
-            Map<String, Mappable> signals = parseAssociativeMapping();
+            Map<Declaration, Mappable> signals = parseAssociativeMapping();
 
             map = new Mapping.Associative(label, id, signals);
         } else {
@@ -274,12 +274,11 @@ public class Parser {
         }
     }
 
-    private Map<String, Mappable> parseAssociativeMapping() {
-        Map<String, Mappable> signals = new HashMap<>();
+    private Map<Declaration, Mappable> parseAssociativeMapping() {
+        Map<Declaration, Mappable> signals = new HashMap<>();
 
         while (true) {
-            String signal1 = (String) currentValue();
-            lexer.nextToken();
+            Declaration signal1 = parseMappingSignal();
 
             checkType(TokenType.MAP, "Association operator expected");
             lexer.nextToken();
@@ -306,6 +305,52 @@ public class Parser {
         }
 
         return signals;
+    }
+
+    private Declaration parseMappingSignal() {
+        String name = (String) currentValue();
+        lexer.nextToken();
+
+        if (!isTokenOfType(TokenType.OPEN_PARENTHESES)) {
+
+            return new Declaration(name);
+        } else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
+            lexer.nextToken();
+
+            checkType(TokenType.NUMBER, "Expected number as index.");
+            int position = (int) currentValue();
+            lexer.nextToken();
+
+            if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
+                lexer.nextToken();
+
+                return new Declaration(name, new VectorData(position, null, position));
+            } else if (isTokenOfType(TokenType.KEYWORD)) {
+                VectorOrder order;
+                if (currentValue().equals("to")) {
+                    order = VectorOrder.TO;
+                } else if (currentValue().equals("downto")) {
+                    order = VectorOrder.DOWNTO;
+                } else {
+                    throw new ParserException("TO or DOWNTO keyword expected.");
+                }
+                lexer.nextToken();
+
+                checkType(TokenType.NUMBER, "Expected number");
+                int second = (int) currentValue();
+                lexer.nextToken();
+
+                checkType(TokenType.CLOSED_PARENTHESES, "Expected closed parentheses");
+                lexer.nextToken();
+
+                return new Declaration(name, new VectorData(position, order, second));
+
+            } else {
+                throw new ParserException("Invalid signal type.");
+            }
+        } else {
+            throw new ParserException("Invalid signal type.");
+        }
     }
 
     private List<Mappable> parsePositionalMapping() {
@@ -351,25 +396,11 @@ public class Parser {
         return label;
     }
 
-    private int parsePosition() {
-        checkType(TokenType.OPEN_PARENTHESES, "( expected");
-        lexer.nextToken();
-
-        checkType(TokenType.NUMBER, "Expected element index as number.");
-        int position = (int) currentValue();
-        lexer.nextToken();
-
-        checkType(TokenType.CLOSED_PARENTHESES, ") expected");
-        lexer.nextToken();
-
-        return position;
-    }
-
     private ExpressionData parseExpression(Declaration portDeclaration) {
         //Shunting-yard algorithm
         Stack<Expression> operands = new Stack<>();
         Stack<String> operators = new Stack<>();
-        Set<Declaration> sensitivity = new HashSet<>();
+        Set<DeclarationExpression> sensitivity = new HashSet<>();
 
         expression(operands, operators, sensitivity, portDeclaration);
 
@@ -411,7 +442,7 @@ public class Parser {
     }
 
     private void expression(
-            Stack<Expression> operands, Stack<String> operators, Set<Declaration> sensitivity,
+            Stack<Expression> operands, Stack<String> operators, Set<DeclarationExpression> sensitivity,
             Declaration portDeclaration) {
         term(operands, operators, sensitivity, portDeclaration);
 
@@ -454,7 +485,7 @@ public class Parser {
     }
 
     private void term(
-            Stack<Expression> operands, Stack<String> operators, Set<Declaration> sensitivity,
+            Stack<Expression> operands, Stack<String> operators, Set<DeclarationExpression> sensitivity,
             Declaration portDeclaration) {
         if (isTokenOfType(TokenType.CONSTANT) || isTokenOfType(TokenType.CONSTANT_VECTOR)) {
             Constant constant = new Constant((LogicValue[]) currentValue(), lexer.getCurrentToken().getType());
@@ -476,7 +507,7 @@ public class Parser {
                 throw new ParserException("Only IN ports can exist on the right side of the " + "expression.");
             }
 
-            sensitivity.add(e.getDeclaration());
+            sensitivity.add(e);
             operands.push(e);
         } else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
             lexer.nextToken();
@@ -775,11 +806,11 @@ public class Parser {
 
     private static class ExpressionData {
         private Expression expression;
-        private Set<Declaration> sensitivity;
+        private Set<DeclarationExpression> sensitivity;
         private long delay;
 
         public ExpressionData(
-                Expression expression, Set<Declaration> sensitivity, long delay) {
+                Expression expression, Set<DeclarationExpression> sensitivity, long delay) {
             this.expression = expression;
             if (!expression.isValid()) {
                 throw new ParserException("Expression is not valid.");

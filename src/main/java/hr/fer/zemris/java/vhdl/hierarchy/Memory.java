@@ -1,8 +1,6 @@
 package hr.fer.zemris.java.vhdl.hierarchy;
 
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
-import hr.fer.zemris.java.vhdl.models.values.Value;
-import hr.fer.zemris.java.vhdl.models.values.VectorData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,22 +11,31 @@ import java.util.List;
 public class Memory {
     private List<LogicValue> values = new ArrayList<>();
 
-    public void write(Value value) {
+    public void write(LogicValue[] values, int[] addresses) {
         //TODO
     }
 
-    public LogicValue[] read(VectorData address) {
+    public LogicValue[] read(int[] addresses) {
         //TODO
         return null;
     }
 
+    public int define(LogicValue[] init) {
+        int address = values.size();
+        for (int i = 0; i < init.length; i++) {
+            values.add(init[i]);
+        }
+
+        return address;
+    }
+
     public int define(int size) {
-        if(size < 1) {
+        if (size < 1) {
             throw new RuntimeException("Cannot create memory word which size is less than one.");
         }
 
         int address = values.size();
-        for(int i = address, end = address + size; i < end; i++) {
+        for (int i = 0; i < size; i++) {
             values.add(LogicValue.UNINITIALIZED);
         }
 

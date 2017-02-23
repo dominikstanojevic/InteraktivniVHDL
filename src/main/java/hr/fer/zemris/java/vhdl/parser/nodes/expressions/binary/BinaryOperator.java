@@ -1,9 +1,9 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
+import hr.fer.zemris.java.vhdl.hierarchy.Memory;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
-import hr.fer.zemris.java.vhdl.models.values.Value;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
@@ -25,41 +25,28 @@ public abstract class BinaryOperator extends Expression {
         this.second = second;
     }
 
-    protected Value calculate(LogicValue[][] valueTable) {
-        //TODO FIX
-        /*Value first = this.first.evaluate();
-        Value second = this.second.evaluate();
+    protected LogicValue[] calculate(LogicValue[][] valueTable, Memory memory) {
+        LogicValue[] first = this.first.evaluate(memory);
+        LogicValue[] second = this.second.evaluate(memory);
 
-		if (first instanceof LogicValue && second instanceof LogicValue) {
-			return valueTable[((LogicValue) first).ordinal()][((LogicValue) second).ordinal()];
-		} else if (first instanceof Vector && second instanceof Vector) {
-			return evaluateVector((Vector) first, (Vector) second, valueTable);
-		}
+        return evaluateVector(first, second, valueTable);
+    }
 
-		throw new RuntimeException(
-				"Operation for type: " + first.getClass() + " and " + second.getClass()
-				+ " is not " + "supported.");
-	}
+    protected static LogicValue[] evaluateVector(LogicValue[] first, LogicValue[] second, LogicValue[][] table) {
+        if (first.length != second.length) {
+            throw new RuntimeException("Expressions are not the same size.");
+        }
 
-	protected static Vector evaluateVector(Vector first, Vector second, LogicValue[][] table) {
-		if (first.length() != second.length()) {
-			throw new RuntimeException("Vectors are not the same size.");
-		}
+        LogicValue[] result = new LogicValue[first.length];
 
-		int length = first.length();
-		LogicValue[] firstOperand = first.getValue();
-		LogicValue[] secondOperand = second.getValue();
-		LogicValue[] result = new LogicValue[length];
+        for (int i = 0; i < first.length; i++) {
+            LogicValue firstValue = first[i];
+            LogicValue secondValue = second[i];
 
-		for (int i = 0; i < length; i++) {
-			LogicValue firstValue = firstOperand[i];
-			LogicValue secondValue = secondOperand[i];
+            result[i] = table[firstValue.ordinal()][secondValue.ordinal()];
+        }
 
-			result[i] = table[firstValue.ordinal()][secondValue.ordinal()];
-		}
-
-		return new Vector(result);*/
-        return new Value(null, null);
+        return result;
     }
 
     @Override
