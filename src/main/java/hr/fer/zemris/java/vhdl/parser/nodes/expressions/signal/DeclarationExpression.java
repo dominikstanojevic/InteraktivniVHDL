@@ -43,6 +43,6 @@ public class DeclarationExpression extends Expression implements Mappable {
 
     @Override
     public Expression prepareExpression(Model model) {
-        return new AddressExpression(model.getAddress(declaration));
+        return new AddressExpression(model.getAddresses(declaration));
     }
 }

@@ -3,15 +3,14 @@ package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.Value;
-import hr.fer.zemris.java.vhdl.models.values.VectorData;
 
 /**
  * Created by Dominik on 22.2.2017..
  */
 public class AddressExpression extends Expression {
-    private VectorData address;
+    private int[] address;
 
-    public AddressExpression(VectorData address) {
+    public AddressExpression(int[] address) {
         this.address = address;
     }
 
@@ -32,7 +31,7 @@ public class AddressExpression extends Expression {
 
     @Override
     public int valueSize() {
-        return address.getSize();
+        return address.length;
     }
 
     @Override

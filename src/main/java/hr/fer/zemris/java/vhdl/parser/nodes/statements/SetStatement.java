@@ -2,7 +2,6 @@ package hr.fer.zemris.java.vhdl.parser.nodes.statements;
 
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
-import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpression;
 
@@ -49,7 +48,7 @@ public class SetStatement extends Statement {
     }
 
     public AddressStatement prepareStatement(Model model) {
-        VectorData address = model.getAddress(declarable.getDeclaration());
+        int[] address = model.getAddresses(declarable.getDeclaration());
         Expression expression = this.expression.prepareExpression(model);
         return new AddressStatement(address, expression, null, delay);
     }

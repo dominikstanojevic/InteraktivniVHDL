@@ -2,6 +2,7 @@ package hr.fer.zemris.java.vhdl.hierarchy;
 
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.VectorData;
+import hr.fer.zemris.java.vhdl.models.values.VectorOrder;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.AddressStatement;
 
 import java.util.HashMap;
@@ -88,41 +89,50 @@ public class Model {
         statements.add(statement);
     }
 
-    public VectorData getAddress(Declaration declaration) {
-        Optional<Declaration> origin =
-                addresses.keySet().stream().filter(d -> d.getLabel().equals(declaration.getLabel())).findAny();
+    public int[] getAddresses(Declaration declaration) {
+        VectorData data = declaration.getVectorData();
+        int[] addresses = new int[data.getSize()];
+        for (int i = 0, size = data.getSize(), start = data.getStart(); i < size; i++) {
+            int index = data.getOrder() == VectorOrder.TO ? start + i : start - i;
+            addresses[i] = findSignal(this, declaration.getLabel(), new VectorData(index, null, index),
+                    new VectorData.Offset(0, 0));
+        }
+        return addresses;
+    }
+
+   /* private int getAddress(String label, VectorData data) {
+        Optional<Declaration> origin = addresses.keySet().stream().filter(d -> d.getLabel().equals(label)).findAny();
         if (origin.isPresent()) {
-            return origin.get().getVectorData().getAddress(declaration.getVectorData(), addresses.get(origin.get()));
+            return origin.get().getVectorData().getAddress(data, addresses.get(origin.get())).getStart();
         } else {
-            origin = mapped.keySet().stream().filter(d -> d.getLabel().equals((declaration.getLabel())) &&
-                                                          declaration.getVectorData().isValid(d)).findAny();
+            origin = mapped.keySet().stream()
+                    .filter(d -> d.getLabel().equals((label)) && data.isValid(d.getVectorData())).findAny();
             if (!origin.isPresent()) {
                 throw new RuntimeException("Cannot find declaration.");
             }
 
-            VectorData.Offset offset = origin.get().getVectorData().calculateOffset(declaration.getVectorData());
+            VectorData.Offset offset = origin.get().getVectorData().calculateOffset(data);
             return findSignal(this.parent, mapped.get(origin.get()), offset);
         }
     }
-
-    private VectorData findSignal(Model model, Declaration declaration, VectorData.Offset offset) {
-        VectorData newData = declaration.getVectorData().getFromOffset(offset);
+*/
+    private int findSignal(Model model, String label, VectorData data, VectorData.Offset offset) {
+        VectorData newData = data.getFromOffset(offset);
 
         Optional<Declaration> origin =
-                model.addresses.keySet().stream().filter(d -> d.getLabel().equals(declaration.getLabel())).findAny();
+                model.addresses.keySet().stream().filter(d -> d.getLabel().equals(label)).findAny();
         if (origin.isPresent()) {
-            return origin.get().getVectorData().getAddress(newData, model.addresses.get(origin.get()));
+            return origin.get().getVectorData().getAddress(newData, model.addresses.get(origin.get())).getStart();
         } else {
-            origin =
-                    model.mapped.keySet().stream().filter(d -> d.getLabel().equals((declaration.getLabel())) &&
-                                                               newData.isValid(d))
-                            .findAny();
+            origin = model.mapped.keySet().stream()
+                    .filter(d -> d.getLabel().equals((label)) && newData.isValid(d.getVectorData())).findAny();
             if (!origin.isPresent()) {
                 throw new RuntimeException("Cannot find declaration.");
             }
 
             offset = origin.get().getVectorData().calculateOffset(newData);
-            return findSignal(model.parent, model.mapped.get(origin.get()), offset);
+            return findSignal(model.parent, model.mapped.get(origin.get()).getLabel(),
+                    model.mapped.get(origin.get()).getVectorData(), offset);
         }
     }
 }

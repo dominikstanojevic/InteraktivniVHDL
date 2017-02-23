@@ -1,6 +1,5 @@
 package hr.fer.zemris.java.vhdl.models.values;
 
-import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.parser.ParserException;
 
 /**
@@ -41,13 +40,12 @@ public class VectorData {
         return start;
     }
 
-    public boolean isValid(Declaration declaration) {
+    public boolean isValid(VectorData other) {
         //TODO: FIX (MAYBE)
         /* if (declaration.getType() != Type.VECTOR_STD_LOGIC) {
             throw new ParserException("Invalid type.");
         }*/
 
-        VectorData other = declaration.getVectorData();
         int end;
         if (order == null) {
             end = this.start;

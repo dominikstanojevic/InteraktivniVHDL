@@ -32,7 +32,7 @@ public class IndexerOperator extends DeclarationExpression {
 
     @Override
     public Declaration getDeclaration() {
-        if (data.isValid(declaration)) {
+        if (data.isValid(declaration.getVectorData())) {
             return new Declaration(declaration.getLabel(), data);
         } else {
             throw new ParserException("Not valid.");
@@ -41,7 +41,7 @@ public class IndexerOperator extends DeclarationExpression {
 
     @Override
     public boolean isValid() {
-        return data.isValid(declaration);
+        return data.isValid(declaration.getVectorData());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class IndexerOperator extends DeclarationExpression {
 
     @Override
     public Expression prepareExpression(Model model) {
-        VectorData address = model.getAddress(getDeclaration());
+        int[] address = model.getAddresses(getDeclaration());
         return new AddressExpression(address);
     }
 }
