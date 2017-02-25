@@ -19,4 +19,20 @@ public class AddressStatement {
         this.sensitivity = sensitivity;
         this.delay = delay;
     }
+
+    public Integer[] getAddress() {
+        return address;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public Set<Integer> getSensitivity() {
+        return sensitivity;
+    }
+
+    public long getDelay() {
+        return delay;
+    }
 }

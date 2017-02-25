@@ -108,6 +108,8 @@ public class VectorData {
     }
 
     public static class Offset {
+        public static final Offset NO_OFFSET = new Offset(0, 0);
+
         private int start;
         private int end;
 

@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.statements;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Model;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.signal.DeclarationExpression;
@@ -45,18 +45,18 @@ public class SetStatement extends Statement {
         return delay;
     }
 
-    public AddressStatement prepareStatement(Model model) {
-        Integer[] address = model.getAddresses(declarable.getDeclaration());
-        Expression expression = this.expression.prepareExpression(model);
-        Set<Integer> sensitivity = mapSensitivityToAddresses(model);
+    public AddressStatement prepareStatement(Component component) {
+        Integer[] address = component.getAddresses(declarable.getDeclaration());
+        Expression expression = this.expression.prepareExpression(component);
+        Set<Integer> sensitivity = mapSensitivityToAddresses(component);
         return new AddressStatement(address, expression, sensitivity, delay);
     }
 
-    private Set<Integer> mapSensitivityToAddresses(Model model) {
+    private Set<Integer> mapSensitivityToAddresses(Component component) {
         Set<Integer> sensitivity = new HashSet<>();
         for (DeclarationExpression e : this.sensitivity) {
             Declaration declaration = e.getDeclaration();
-            Integer[] addresses = model.getAddresses(declaration);
+            Integer[] addresses = component.getAddresses(declaration);
             sensitivity.addAll(Arrays.asList(addresses));
         }
 

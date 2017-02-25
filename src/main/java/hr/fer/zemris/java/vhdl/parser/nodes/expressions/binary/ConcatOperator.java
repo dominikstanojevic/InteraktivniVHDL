@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
@@ -14,9 +14,9 @@ public class ConcatOperator extends BinaryOperator {
     }
 
     @Override
-    public LogicValue[] evaluate(Memory memory) {
-        LogicValue[] first = this.first.evaluate(memory);
-        LogicValue[] second = this.second.evaluate(memory);
+    public LogicValue[] evaluate(Model model) {
+        LogicValue[] first = this.first.evaluate(model);
+        LogicValue[] second = this.second.evaluate(model);
 
         LogicValue[] result = new LogicValue[first.length + second.length];
         System.arraycopy(first, 0, result, 0, first.length);

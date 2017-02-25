@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
@@ -33,7 +33,7 @@ public class IndexerOperator extends DeclarationExpression {
     }
 
     @Override
-    public LogicValue[] evaluate(Memory memory) {
+    public LogicValue[] evaluate(Model model) {
         throw new UnsupportedOperationException();
     }
 
@@ -53,8 +53,8 @@ public class IndexerOperator extends DeclarationExpression {
     }
 
     @Override
-    public Expression prepareExpression(Model model) {
-        Integer[] address = model.getAddresses(getDeclaration());
+    public Expression prepareExpression(Component component) {
+        Integer[] address = component.getAddresses(getDeclaration());
         return new AddressExpression(address);
     }
 }

@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.vhdl.hierarchy;
 
+import hr.fer.zemris.java.vhdl.environment.Table;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.declarations.PortType;
@@ -33,24 +34,26 @@ public class HierarchyBuilder {
 
     private Memory memory = new Memory();
 
-    private Model testbench;
+    private Component uut;
+
+    private Table table = new Table();
 
     public HierarchyBuilder(ProgramNode program) {
         entities = new HashMap<>();
         entities.put(program.getEntity().getName(), program);
 
-        testbench = createTestbench(program);
-        testbench.getModels().forEach(this::build);
+        uut = createTestbench(program);
+        build(uut);
     }
 
-    private void build(Model model) {
-        ProgramNode program = entities.get(model.getName());
-        createSignals(model, program);
-        createStatements(model, program);
-        createChildren(model, program);
+    private void build(Component component) {
+        ProgramNode program = entities.get(component.getName());
+        createSignals(component, program);
+        createStatements(component, program);
+        createChildren(component, program);
     }
 
-    private void createChildren(Model model, ProgramNode program) {
+    private void createChildren(Component component, ProgramNode program) {
         Set<Mapping> mappings = program.getArchitecture().getMappedEntities();
         for (Mapping mapping : mappings) {
             ProgramNode childNode = entities.get(mapping.getEntity());
@@ -58,7 +61,7 @@ public class HierarchyBuilder {
                 childNode = parseEntity(mapping.getEntity());
             }
 
-            Model child = new Model(mapping.getEntity(), model.getLabel() + "/" + mapping.getLabel());
+            Component child = new Component(mapping.getEntity(), component.getLabel() + "/" + mapping.getLabel());
             List<Declaration> mappedTo = childNode.getEntity().getDeclarations();
             if (mapping instanceof Mapping.Positional) {
                 createPositionalMapping(child, ((Mapping.Positional) mapping).getMapped(), mappedTo);
@@ -66,14 +69,15 @@ public class HierarchyBuilder {
                 createAssociativeMapping(child, ((Mapping.Associative) mapping).getMapped(), mappedTo);
             }
 
-            child.setParent(model);
-            model.addModel(child);
+            child.setParent(component);
+            component.addModel(child);
 
             build(child);
         }
     }
 
-    private void createAssociativeMapping(Model child, Map<Declaration, Mappable> mapped, List<Declaration> mappedTo) {
+    private void createAssociativeMapping(
+            Component child, Map<Declaration, Mappable> mapped, List<Declaration> mappedTo) {
         Set<Declaration> m = mapped.keySet();
         for (Declaration origin : mappedTo) {
             VectorData originData = origin.getVectorData();
@@ -114,7 +118,7 @@ public class HierarchyBuilder {
         }
     }
 
-    private void createPositionalMapping(Model child, List<Mappable> mapped, List<Declaration> mappedTo) {
+    private void createPositionalMapping(Component child, List<Mappable> mapped, List<Declaration> mappedTo) {
         long mappedSize = mapped.size();
         long mappedToSize = mappedTo.stream().filter(d -> d.getPortType() == PortType.IN).count();
         if (mappedSize < mappedToSize) {
@@ -165,25 +169,26 @@ public class HierarchyBuilder {
         }
     }
 
-    private void createStatements(Model model, ProgramNode program) {
+    private void createStatements(Component component, ProgramNode program) {
         List<SetStatement> statements = program.getArchitecture().getStatements();
         for (SetStatement statement : statements) {
-            AddressStatement s = statement.prepareStatement(model);
-            model.addStatement(s);
+            AddressStatement s = statement.prepareStatement(component);
+            s.getSensitivity().forEach(i -> table.addStatement(i, s));
+            component.addStatement(s);
         }
     }
 
-    private void createSignals(Model model, ProgramNode program) {
+    private void createSignals(Component component, ProgramNode program) {
         List<Declaration> signals = program.getArchitecture().getSignals();
         for (Declaration signal : signals) {
             int size = signal.size();
             int address = memory.define(size);
-            model.addSignal(signal, address);
+            component.addSignal(signal, address);
         }
     }
 
-    private Model createTestbench(ProgramNode program) {
-        Model testbench = new Model("testbench", "");
+    private Component createTestbench(ProgramNode program) {
+        Component testbench = new Component("testbench", "");
 
         List<Declaration> signals = program.getEntity().getDeclarations();
         for (Declaration signal : signals) {
@@ -192,22 +197,26 @@ public class HierarchyBuilder {
             testbench.addSignal(signal, address);
         }
 
-        Model uut = new Model(program.getEntity().getName(), "/uut");
+        Component uut = new Component(program.getEntity().getName(), "/uut");
+        table.setUut(uut);
         uut.setParent(testbench);
         testbench.addModel(uut);
         for (Declaration signal : signals) {
             uut.addMapped(signal, signal);
         }
 
-        return testbench;
+        return uut;
     }
 
-    public static void main(String[] args) throws IOException {
-        String program = new String(Files.readAllBytes(Paths.get("Adder_4_bit.vhdl")), StandardCharsets.UTF_8);
+    public Memory getMemory() {
+        return memory;
+    }
 
-        Lexer lexer = new Lexer(program);
-        Parser parser = new Parser(lexer);
-        HierarchyBuilder hb = new HierarchyBuilder(parser.getProgramNode());
-        Memory m = hb.memory;
+    public Component getUut() {
+        return uut;
+    }
+
+    public Table getTable() {
+        return table;
     }
 }

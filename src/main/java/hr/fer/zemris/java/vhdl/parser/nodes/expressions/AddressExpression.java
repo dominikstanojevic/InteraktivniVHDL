@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
@@ -16,8 +16,13 @@ public class AddressExpression extends Expression {
     }
 
     @Override
-    public LogicValue[] evaluate(Memory memory) {
-        return null;
+    public LogicValue[] evaluate(Model model) {
+        LogicValue[] values = new LogicValue[address.length];
+        for(int i = 0; i < values.length; i++) {
+            values[i] = model.getValue(address[i]);
+        }
+
+        return values;
     }
 
     @Override
@@ -36,7 +41,7 @@ public class AddressExpression extends Expression {
     }
 
     @Override
-    public Expression prepareExpression(Model model) {
+    public Expression prepareExpression(Component component) {
         return null;
     }
 }

@@ -12,12 +12,30 @@ public class Memory {
     private List<LogicValue> values = new ArrayList<>();
 
     public void write(LogicValue[] values, int[] addresses) {
-        //TODO
+        if (values.length != addresses.length) {
+            throw new RuntimeException("Number of addresses and number of values differ");
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            this.values.set(addresses[i], values[i]);
+        }
+    }
+
+    public void write(LogicValue value, int address) {
+        values.set(address, value);
     }
 
     public LogicValue[] read(int[] addresses) {
-        //TODO
-        return null;
+        LogicValue[] values = new LogicValue[addresses.length];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = this.values.get(addresses[i]);
+        }
+
+        return values;
+    }
+
+    public LogicValue read(int address) {
+        return values.get(address);
     }
 
     public int define(LogicValue[] init) {

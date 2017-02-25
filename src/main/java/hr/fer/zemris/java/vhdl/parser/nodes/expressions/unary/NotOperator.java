@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.unary;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
@@ -26,15 +26,15 @@ public class NotOperator extends UnaryOperator {
     }
 
     @Override
-    public LogicValue[] evaluate(Memory memory) {
-        LogicValue[] value = expression.evaluate(memory);
+    public LogicValue[] evaluate(Model model) {
+        LogicValue[] value = expression.evaluate(model);
 
         LogicValue[] result = new LogicValue[value.length];
         for (int i = 0; i < value.length; i++) {
             result[i] = NotOperator.negation.get(value[i]);
         }
 
-        return value;
+        return result;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class NotOperator extends UnaryOperator {
     }
 
     @Override
-    public Expression prepareExpression(Model model) {
-        return new NotOperator(expression.prepareExpression(model));
+    public Expression prepareExpression(Component component) {
+        return new NotOperator(expression.prepareExpression(component));
     }
 }

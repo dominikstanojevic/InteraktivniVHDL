@@ -100,7 +100,7 @@ public class Parser {
 
         checkType(TokenType.IDENT, "Expected identification.");
         if (!table.getEntryName().equals(currentValue())) {
-            throw new ParserException("Model name in the architecture does not match entity " + "name.");
+            throw new ParserException("Component name in the architecture does not match entity " + "name.");
         }
         lexer.nextToken();
 

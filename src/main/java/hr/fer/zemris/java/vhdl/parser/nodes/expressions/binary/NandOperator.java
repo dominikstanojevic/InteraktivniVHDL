@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.nodes.expressions.Expression;
 
@@ -19,7 +19,7 @@ public class NandOperator extends BinaryOperator {
 	}
 
 	@Override
-	public LogicValue[] evaluate(Memory memory) {
-		return calculate(values, memory);
+	public LogicValue[] evaluate(Model model) {
+		return calculate(values, model);
 	}
 }

@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions.binary;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
@@ -25,9 +25,9 @@ public abstract class BinaryOperator extends Expression {
         this.second = second;
     }
 
-    protected LogicValue[] calculate(LogicValue[][] valueTable, Memory memory) {
-        LogicValue[] first = this.first.evaluate(memory);
-        LogicValue[] second = this.second.evaluate(memory);
+    protected LogicValue[] calculate(LogicValue[][] valueTable, Model model) {
+        LogicValue[] first = this.first.evaluate(model);
+        LogicValue[] second = this.second.evaluate(model);
 
         return evaluateVector(first, second, valueTable);
     }
@@ -73,10 +73,10 @@ public abstract class BinaryOperator extends Expression {
     }
 
     @Override
-    public Expression prepareExpression(Model model) {
+    public Expression prepareExpression(Component component) {
         try {
             return this.getClass().getConstructor(Expression.class, Expression.class)
-                    .newInstance(first.prepareExpression(model), second.prepareExpression(model));
+                    .newInstance(first.prepareExpression(component), second.prepareExpression(component));
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException("Ovo je greška.");
         }

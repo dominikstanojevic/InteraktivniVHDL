@@ -1,6 +1,6 @@
 package hr.fer.zemris.java.vhdl.parser.nodes.expressions;
 
-import hr.fer.zemris.java.vhdl.hierarchy.Memory;
+import hr.fer.zemris.java.vhdl.hierarchy.Component;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
@@ -30,7 +30,7 @@ public class Constant extends Expression implements Mappable {
     }
 
     @Override
-    public LogicValue[] evaluate(Memory memory) {
+    public LogicValue[] evaluate(Model model) {
         return values;
     }
 
@@ -51,7 +51,7 @@ public class Constant extends Expression implements Mappable {
     }
 
     @Override
-    public Expression prepareExpression(Model model) {
+    public Expression prepareExpression(Component component) {
         return this;
     }
 
