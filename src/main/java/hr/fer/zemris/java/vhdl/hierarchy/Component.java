@@ -68,11 +68,6 @@ public class Component {
         components.add(component);
     }
 
-    public Integer getSignalData(String name) {
-        String fullName = label + "/" + name;
-        return addresses.get(fullName);
-    }
-
     public String getLabel() {
         return label;
     }
@@ -133,5 +128,9 @@ public class Component {
             return findSignal(component.parent, component.mapped.get(origin.get()).getLabel(),
                     component.mapped.get(origin.get()).getVectorData(), offset);
         }
+    }
+
+    public Declaration getPort(String signal) {
+        return mapped.keySet().stream().filter(d -> d.getLabel().equals(signal)).findFirst().get();
     }
 }

@@ -3,6 +3,7 @@ package hr.fer.zemris.java.vhdl.hierarchy;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,9 +41,7 @@ public class Memory {
 
     public int define(LogicValue[] init) {
         int address = values.size();
-        for (int i = 0; i < init.length; i++) {
-            values.add(init[i]);
-        }
+        Collections.addAll(values, init);
 
         return address;
     }

@@ -39,7 +39,7 @@ public class UI implements Runnable, IModelListener {
     public void run() {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Input signals: ");
+        System.out.println("Signal signals: ");
 
         environment.getModel().getUut().getPorts().stream().filter(p -> p.getPortType() == PortType.IN)
                 .forEach(e -> System.out.println(e.getLabel() + ": type " + e.getType()));

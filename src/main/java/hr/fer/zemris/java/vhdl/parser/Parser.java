@@ -256,7 +256,6 @@ public class Parser {
 
         if (!isTokenOfType(TokenType.OPEN_PARENTHESES)) {
 
-            return;
         } else if (isTokenOfType(TokenType.OPEN_PARENTHESES)) {
             lexer.nextToken();
 
@@ -266,8 +265,6 @@ public class Parser {
 
             checkType(TokenType.CLOSED_PARENTHESES, "Expected )");
             lexer.nextToken();
-
-            return;
 
         } else {
             throw new ParserException("Invalid signal type.");
@@ -295,7 +292,6 @@ public class Parser {
 
             if (isTokenOfType(TokenType.COMMA)) {
                 lexer.nextToken();
-                continue;
             } else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
                 lexer.nextToken();
                 break;
@@ -369,7 +365,6 @@ public class Parser {
 
             if (isTokenOfType(TokenType.COMMA)) {
                 lexer.nextToken();
-                continue;
             } else if (isTokenOfType(TokenType.CLOSED_PARENTHESES)) {
                 lexer.nextToken();
                 break;
