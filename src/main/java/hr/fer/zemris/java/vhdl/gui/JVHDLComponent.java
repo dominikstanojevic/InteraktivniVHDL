@@ -194,7 +194,7 @@ public class JVHDLComponent extends VHDLComponent {
                     data.getStart() - d.getAccess();
             int address = component.getAddresses(signal)[index];
 
-            Signal s = new Signal(signal.getLabel(), address, startWidth, startHeight, b);
+            Signal s = new Signal(signal.getLabel() + d.getAccess(), address, startWidth, startHeight, b);
             list.add(s);
             position.add(s);
         }
