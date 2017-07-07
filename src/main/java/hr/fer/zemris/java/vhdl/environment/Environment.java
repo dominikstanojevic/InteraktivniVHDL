@@ -37,7 +37,9 @@ public class Environment {
         HierarchyBuilder hb = new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
         model = new Model(hb.getMemory(), hb.getTable(), hb.getUut());
         startTime = System.currentTimeMillis();
-        setInit(signals);
+        if(signals != null) {
+            setInit(signals);
+        }
 
         timeQueue = new TimeQueue(this);
         model.addListener(timeQueue);

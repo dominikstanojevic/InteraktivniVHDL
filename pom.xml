@@ -88,7 +88,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>hr.fer.zemris.java.vhdl.Environment</mainClass>
+                            <mainClass>hr.fer.zemris.java.vhdl.environment.Environment</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Class-Path>.</Class-Path>
