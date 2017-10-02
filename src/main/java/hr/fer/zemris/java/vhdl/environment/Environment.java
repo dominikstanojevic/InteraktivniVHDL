@@ -135,7 +135,7 @@ public class Environment {
     }
 
     private static Map<String, String> initSignals(String string) {
-        if (!string.startsWith("-init{") || !string.endsWith("}")) {
+        if (!string.startsWith("-init(") || !string.endsWith(")")) {
             JOptionPane.showMessageDialog(null, "Invalid initialization argument.", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(-1);
         }

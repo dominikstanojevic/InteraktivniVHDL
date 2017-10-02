@@ -125,11 +125,19 @@ public class Parser {
         }
         lexer.nextToken();
 
-        checkType(TokenType.IDENT, "Expected identification");
-        if (!table.getArchName().equals(currentValue())) {
-            throw new ParserException("Architecture name does not match.");
+        if (isTokenOfType(TokenType.KEYWORD)) {
+            if(!currentValue().equals("architecture")) {
+                throw new ParserException("Expected keyword ARCHITECTURE or architecture name.");
+            }
+            lexer.nextToken();
+
+        } else {
+            checkType(TokenType.IDENT, "Expected identification");
+            if (!table.getArchName().equals(currentValue())) {
+                throw new ParserException("Expected keyword ARCHITECTURE or architecture name.");
+            }
+            lexer.nextToken();
         }
-        lexer.nextToken();
 
         checkType(TokenType.SEMICOLON, "; expected");
         lexer.nextToken();
@@ -602,11 +610,18 @@ public class Parser {
         checkType(TokenType.KEYWORD, "end", "Keyword END expected.");
         lexer.nextToken();
 
-        checkType(TokenType.IDENT, entity.getName(), "Entity name expected.");
-        if (!table.getEntryName().equals(currentValue())) {
-            throw new ParserException("End entity name is different than given.");
+        if(isTokenOfType(TokenType.KEYWORD)) {
+            if(!currentValue().equals("entity")) {
+                throw new ParserException("Keyword ENTITY or entity name expected.");
+            }
+            lexer.nextToken();
+        } else {
+            checkType(TokenType.IDENT, entity.getName(), "Entity name expected.");
+            if (!table.getEntryName().equals(currentValue())) {
+                throw new ParserException("Keyword ENTITY or entity name expected.");
+            }
+            lexer.nextToken();
         }
-        lexer.nextToken();
 
         checkType(TokenType.SEMICOLON, "; expected");
         lexer.nextToken();
