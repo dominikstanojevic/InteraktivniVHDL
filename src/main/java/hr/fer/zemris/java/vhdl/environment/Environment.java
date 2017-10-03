@@ -10,9 +10,7 @@ import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.Parser;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominik on 24.2.2017..
@@ -37,7 +36,7 @@ public class Environment {
         HierarchyBuilder hb = new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
         model = new Model(hb.getMemory(), hb.getTable(), hb.getUut());
         startTime = System.currentTimeMillis();
-        if(signals != null) {
+        if (signals != null) {
             setInit(signals);
         }
 
@@ -45,44 +44,6 @@ public class Environment {
         model.addListener(timeQueue);
 
         simulator = new Simulator(this);
-    }
-
-    private void setInit(Map<String, String> signals) {
-        Component uut = model.getUut();
-        for (Map.Entry<String, String> entry : signals.entrySet()) {
-            String name = entry.getKey();
-            String value = entry.getValue();
-
-            Declaration port = uut.getPort(name);
-            if (port == null) {
-                throw new RuntimeException("Invalid port name. " + name + " does not exist.");
-            }
-
-            Integer[] addresses = uut.getAddresses(port);
-            if (addresses.length != value.length()) {
-                throw new RuntimeException("Invalid number of logical values for port " + name + ".");
-            }
-
-            for (int i = 0; i < addresses.length; i++) {
-                model.signalChanged(addresses[i], LogicValue.getValue(value.charAt(i)), startTime);
-            }
-        }
-    }
-
-    public Model getModel() {
-        return model;
-    }
-
-    public TimeQueue getTimeQueue() {
-        return timeQueue;
-    }
-
-    public Simulator getSimulator() {
-        return simulator;
-    }
-
-    public long getStartTime() {
-        return startTime;
     }
 
     public static void main(String[] args) throws IOException {
@@ -140,8 +101,8 @@ public class Environment {
             System.exit(-1);
         }
 
-        string = string.replace("-init{", "");
-        string = string.replace("}", "");
+        string = string.replace("-init(", "");
+        string = string.replace(")", "");
 
         Map<String, String> values = new HashMap<>();
         String[] signals = string.split(",");
@@ -162,7 +123,7 @@ public class Environment {
             throws
             IOException {
         Path path = Paths.get(filename + ".sim");
-        if(!Files.isRegularFile(path)) {
+        if (!Files.isRegularFile(path)) {
             return null;
         }
 
@@ -170,5 +131,64 @@ public class Environment {
         PositionParser pp = new PositionParser(program, table);
 
         return pp.getDefinitions();
+    }
+
+    private void setInit(Map<String, String> signals) {
+        Component uut = model.getUut();
+
+        String defaultValue = null;
+
+        for (Map.Entry<String, String> entry : signals.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+
+            if (name.equals("*")) {
+                defaultValue = value;
+                continue;
+            }
+
+            Declaration port = uut.getPort(name);
+            if (port == null) {
+                throw new RuntimeException("Invalid port name. " + name + " does not exist.");
+            }
+
+            Integer[] addresses = uut.getAddresses(port);
+            if (addresses.length != value.length()) {
+                throw new RuntimeException("Invalid number of logical values for port " + name + ".");
+            }
+
+            for (int i = 0; i < addresses.length; i++) {
+                model.signalChanged(addresses[i], LogicValue.getValue(value.charAt(i)), startTime);
+            }
+        }
+
+        if(defaultValue != null) {
+            Set<Declaration> ports = uut.getPorts();
+            Set<Declaration> defaultPorts = ports.stream().filter(d -> !signals.keySet().contains(d.getLabel())).collect(Collectors.toSet());
+
+            for (Declaration port : defaultPorts) {
+                Integer[] addresses = uut.getAddresses(port);
+
+                for (int i = 0; i < addresses.length; i++) {
+                    model.signalChanged(addresses[i], LogicValue.getValue(defaultValue.charAt(0)), startTime);
+                }
+            }
+        }
+    }
+
+    public Model getModel() {
+        return model;
+    }
+
+    public TimeQueue getTimeQueue() {
+        return timeQueue;
+    }
+
+    public Simulator getSimulator() {
+        return simulator;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 }

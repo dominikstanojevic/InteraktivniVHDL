@@ -4,6 +4,7 @@ import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.lexer.Token;
 import hr.fer.zemris.java.vhdl.lexer.TokenType;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
+import hr.fer.zemris.java.vhdl.models.declarations.Package;
 import hr.fer.zemris.java.vhdl.models.declarations.PortType;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.models.values.Type;
@@ -72,11 +73,17 @@ public class Parser {
         }
     }
 
+    private boolean lexemEqualTo(Object object) {
+        return currentValue().equals(object);
+    }
+
     private Object currentValue() {
         return lexer.getCurrentToken().getValue();
     }
 
     private ProgramNode parse() {
+        parseHeader();
+
         checkType(TokenType.KEYWORD, "entity", "Expected entity block.");
         lexer.nextToken();
         EntityNode entity = parseEntity();
@@ -88,6 +95,53 @@ public class Parser {
         checkType(TokenType.EOF, "End of file expected.");
 
         return new ProgramNode(entity, arch, table);
+    }
+
+    private void parseHeader() {
+        while (isTokenOfType(TokenType.KEYWORD) && (lexemEqualTo("library") || lexemEqualTo("use"))) {
+            String keywordLexem = (String) currentValue();
+            lexer.nextToken();
+
+            checkType(TokenType.IDENT, "Expected library name.");
+            String libraryName = (String) currentValue();
+
+
+            if (keywordLexem.equals("library")) {
+                table.addLibrary(libraryName);
+                lexer.nextToken();
+
+                checkType(TokenType.SEMICOLON, "Semicolon expected");
+                lexer.nextToken();
+            } else {
+                lexer.nextToken();
+
+                checkType(TokenType.DOT, "Package name expected.");
+                lexer.nextToken();
+
+                checkType(TokenType.IDENT, "Package name expected.");
+                String packName = (String) currentValue();
+
+                if (!packName.equals("std_logic_1164")) {
+                    throw new ParserException("Desired package not available.");
+                }
+                Package pack = Package.getStdLogicPackage();
+                if (!table.isLibraryUsed(pack.getLibrary())) {
+                    throw new ParserException("Library for the given package is not declared.");
+                }
+                table.addPackages(pack);
+                lexer.nextToken();
+
+                checkType(TokenType.DOT, "Type expected.");
+                lexer.nextToken();
+
+                checkType(TokenType.IDENT, "Type expected.");
+                pack.setUsed((String) currentValue());
+                lexer.nextToken();
+
+                checkType(TokenType.SEMICOLON, "Semicolon expected.");
+                lexer.nextToken();
+            }
+        }
     }
 
     private ArchitectureNode parseArchitecture() {
@@ -126,7 +180,7 @@ public class Parser {
         lexer.nextToken();
 
         if (isTokenOfType(TokenType.KEYWORD)) {
-            if(!currentValue().equals("architecture")) {
+            if (!currentValue().equals("architecture")) {
                 throw new ParserException("Expected keyword ARCHITECTURE or architecture name.");
             }
             lexer.nextToken();
@@ -476,7 +530,7 @@ public class Parser {
         }
 
         while (!operators.empty() && operators.peek().equals("&") &&
-               !(operator.equals("(") || operator.equals("not"))) {
+                !(operator.equals("(") || operator.equals("not"))) {
             popOperator(operands, operators);
         }
 
@@ -496,7 +550,7 @@ public class Parser {
                 throw new ParserException("Invalid type for constant.");
             }
             if (constant.getDeclaration().getType() == Type.VECTOR_STD_LOGIC &&
-                constant.getDeclaration().getVectorData().getSize() != portDeclaration.getVectorData().getSize()) {
+                    constant.getDeclaration().getVectorData().getSize() != portDeclaration.getVectorData().getSize()) {
                 throw new ParserException("Constant vector is not valid size.");
             }
 
@@ -610,8 +664,8 @@ public class Parser {
         checkType(TokenType.KEYWORD, "end", "Keyword END expected.");
         lexer.nextToken();
 
-        if(isTokenOfType(TokenType.KEYWORD)) {
-            if(!currentValue().equals("entity")) {
+        if (isTokenOfType(TokenType.KEYWORD)) {
+            if (!currentValue().equals("entity")) {
                 throw new ParserException("Keyword ENTITY or entity name expected.");
             }
             lexer.nextToken();

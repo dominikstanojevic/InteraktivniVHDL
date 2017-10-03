@@ -1,3 +1,6 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
 ENTITY Adder_1_bit IS PORT(
 	x: in std_logic;
 	y: in std_logic;
@@ -5,7 +8,7 @@ ENTITY Adder_1_bit IS PORT(
 	sum: out std_logic;
 	cout: out std_logic
 );
-END Adder_1_bit;
+END entity;
 
 architecture arch OF Adder_1_bit IS
 BEGIN

@@ -1,6 +1,7 @@
 package hr.fer.zemris.java.vhdl.parser;
 
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
+import hr.fer.zemris.java.vhdl.models.declarations.Package;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,8 @@ public class DeclarationTable {
     private Map<String, Declaration> declarations;
     private String archName;
     private Set<String> labels = new HashSet<>();
+    private Set<String> libraries = new HashSet<>();
+    private Set<Package> packages = new HashSet<>();
 
     public String getEntryName() {
         return entryName;
@@ -54,5 +57,17 @@ public class DeclarationTable {
 
     public Declaration getDeclaration(String name) {
         return declarations.get(name);
+    }
+
+    public void addLibrary(String library) {
+        libraries.add(library);
+    }
+
+    public void addPackages(Package pack) {
+        packages.add(pack);
+    }
+
+    public boolean isLibraryUsed(String library) {
+        return libraries.contains(library);
     }
 }

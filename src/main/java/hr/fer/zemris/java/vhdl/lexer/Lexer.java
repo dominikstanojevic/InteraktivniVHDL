@@ -66,6 +66,8 @@ public class Lexer {
         keywords.add("map");
         keywords.add("open");
         keywords.add("after");
+        keywords.add("library");
+        keywords.add("use");
     }
 
     public Lexer(String program) {
