@@ -216,6 +216,8 @@ public class Parser {
 
         checkType(TokenType.KEYWORD, "Keyword expected.");
         List<Declaration> signals;
+
+        checkDeclaredType((String) currentValue());
         if (currentValue().equals("std_logic")) {
             signals = createStdSignals(declarations);
             lexer.nextToken();
@@ -711,6 +713,8 @@ public class Parser {
 
         checkType(TokenType.KEYWORD, "Keyword expected.");
         List<Declaration> signals;
+
+        checkDeclaredType((String) currentValue());
         if (currentValue().equals("std_logic")) {
             signals = createStdPorts(declarations, type);
             lexer.nextToken();
@@ -850,6 +854,12 @@ public class Parser {
 
         if (!first.equals("not") && !second.equals("not") && !first.equals(second)) {
             throwOperatorsException(first, second);
+        }
+    }
+
+    private void checkDeclaredType(String type) {
+        if (!table.isTypeUsed(type)) {
+            throw new ParserException("Type " + currentValue() + " not defined.");
         }
     }
 

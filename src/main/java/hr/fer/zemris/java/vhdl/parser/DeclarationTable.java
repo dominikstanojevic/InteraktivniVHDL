@@ -70,4 +70,8 @@ public class DeclarationTable {
     public boolean isLibraryUsed(String library) {
         return libraries.contains(library);
     }
+
+    public boolean isTypeUsed(String type) {
+        return packages.stream().anyMatch(p -> p.isTypeUsed(type));
+    }
 }

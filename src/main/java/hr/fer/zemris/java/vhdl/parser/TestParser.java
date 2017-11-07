@@ -15,7 +15,7 @@ public class TestParser {
     public static void main(String[] args) throws IOException {
 
         String program =
-                new String(Files.readAllBytes(Paths.get("D:\\fer\\Java\\InteraktivniVHDL\\testovi\\Adder_4_bit.vhdl")),
+                new String(Files.readAllBytes(Paths.get("Adder_1_bit.vhdl")),
                         StandardCharsets.UTF_8);
 
         Lexer lexer = new Lexer(program);

@@ -250,7 +250,7 @@ public class Lexer {
         }
 
         int endIndex = currPos;
-        String value = new String(data, startIndex, endIndex - startIndex);
+        String value = new String(data, startIndex, endIndex - startIndex).toLowerCase();
 
         if (keywords.contains(value.toLowerCase())) {
             tokens.add(new Token(TokenType.KEYWORD, value.toLowerCase()));

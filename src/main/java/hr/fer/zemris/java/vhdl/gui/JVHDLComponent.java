@@ -8,15 +8,9 @@ import hr.fer.zemris.java.vhdl.models.values.Type;
 import hr.fer.zemris.java.vhdl.models.values.VectorData;
 import hr.fer.zemris.java.vhdl.models.values.VectorOrder;
 
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -85,6 +79,31 @@ public class JVHDLComponent extends VHDLComponent {
 
         initBottom(positions.stream().filter(d -> d.getPosition() == PositionParser.Position.BOTTOM)
                 .collect(Collectors.toCollection(LinkedHashSet::new)), inputs, outputs, bottom);
+
+        checkAll(inputs, outputs);
+    }
+
+    private void checkAll(List<Declaration> inputs, List<Declaration> outputs) {
+        List<Declaration> all = new ArrayList<>();
+        all.addAll(inputs);
+        all.addAll(outputs);
+        for (Declaration d : all) {
+            if (d.getVectorData() == null && !added.contains(d.getLabel())) {
+                throw new RuntimeException("Signal " + d.getLabel() + "don't have a position.");
+            } else {
+                if (!added.contains(d.getLabel())) {
+                    VectorData vectorData = d.getVectorData();
+                    VectorOrder order = vectorData.getOrder();
+                    int start = vectorData.getStart();
+                    for (int i = 0, n = vectorData.getSize(); i < n; i++) {
+                        int pos = order == VectorOrder.TO ? (start + i) : (start - i);
+                        if (!added.contains(d.getLabel() + pos)) {
+                            throw new RuntimeException("Signal " + d.getLabel() + pos + " don't have a position.");
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void initRight(
@@ -183,6 +202,8 @@ public class JVHDLComponent extends VHDLComponent {
             Signal s = new Signal(signal.getLabel(), address, startWidth, startHeight, b);
             list.add(s);
             position.add(s);
+
+            added.add(signal.getLabel());
         } else {
             if (signal.getType() != Type.VECTOR_STD_LOGIC) {
                 throw new RuntimeException("Invalid definition for signal: " + signal.getLabel());
@@ -194,11 +215,16 @@ public class JVHDLComponent extends VHDLComponent {
                     data.getStart() - d.getAccess();
             int address = component.getAddresses(signal)[index];
 
-            Signal s = new Signal(signal.getLabel() + d.getAccess(), address, startWidth, startHeight, b);
+            String name = signal.getLabel() + d.getAccess();
+            Signal s = new Signal(name, address, startWidth, startHeight, b);
             list.add(s);
             position.add(s);
+
+            added.add(name);
         }
     }
+
+    private Set<String> added = new HashSet<>();
 
     private void calculateWidth(int top, int left, int right, int bottom) {
         int box = getBoxSize(top, bottom);

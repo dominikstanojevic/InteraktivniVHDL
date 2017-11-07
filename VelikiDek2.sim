@@ -1,3 +1,6 @@
 e top
 a left
-i right
+i(0) right
+i(3) bottom
+i(2) left
+i(1) right

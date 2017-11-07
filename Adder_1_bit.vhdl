@@ -12,6 +12,6 @@ END entity;
 
 architecture arch OF Adder_1_bit IS
 BEGIN
-	sum <= x xor y xor cin;
+	sum <= X xor y xor cin;
 	cout <= (x and y) or (x and cin) or (y and cin);
 END arch;
