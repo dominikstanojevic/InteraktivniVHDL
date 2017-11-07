@@ -253,12 +253,12 @@ public class Lexer {
         String value = new String(data, startIndex, endIndex - startIndex).toLowerCase();
 
         if (keywords.contains(value.toLowerCase())) {
-            tokens.add(new Token(TokenType.KEYWORD, value.toLowerCase()));
+            tokens.add(new Token(TokenType.KEYWORD, value));
             return;
         }
 
         if (operators.contains(value.toLowerCase())) {
-            tokens.add(new Token(TokenType.OPERATORS, value.toLowerCase()));
+            tokens.add(new Token(TokenType.OPERATORS, value));
             return;
         }
 
