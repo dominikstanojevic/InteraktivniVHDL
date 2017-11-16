@@ -21,9 +21,7 @@ public class Simulator implements Runnable {
         Set<AddressStatement> statements = new HashSet<>();
         table.getStatements().values().forEach(statements::addAll);
 
-        statements.forEach(s -> {
-            assign(s.getAddress(), s.getExpression().evaluate(environment.getModel()), environment.getStartTime());
-        });
+        statements.forEach(s -> assign(s.getAddress(), s.getExpression().evaluate(environment.getModel()), environment.getStartTime()));
     }
 
     @Override

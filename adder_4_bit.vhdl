@@ -1,3 +1,7 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+
 --ovo su komentari
 --trebali bi biti zanemareni
 ENTITY Adder_4_bit IS PORT(

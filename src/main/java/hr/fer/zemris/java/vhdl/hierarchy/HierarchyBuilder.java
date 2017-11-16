@@ -16,14 +16,13 @@ import hr.fer.zemris.java.vhdl.parser.nodes.statements.SetStatement;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mappable;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.mapping.Mapping;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -159,7 +158,7 @@ public class HierarchyBuilder {
 
     private ProgramNode parseEntity(String entityName) {
         try {
-            String program = new String(Files.readAllBytes(Paths.get(entityName + ".vhdl")), StandardCharsets.UTF_8);
+            String program = readFile(entityName + ".vhdl");
             Parser parser = new Parser(new Lexer(program));
             ProgramNode prog = parser.getProgramNode();
             entities.put(entityName, prog);
@@ -175,6 +174,11 @@ public class HierarchyBuilder {
             AddressStatement s = statement.prepareStatement(component);
             s.getSensitivity().forEach(i -> table.addStatement(i, s));
             component.addStatement(s);
+
+            if (s.getSensitivity().size() == 0) {
+                memory.write(s.getExpression().evaluate(null),
+                        Arrays.stream(s.getAddress()).mapToInt(Integer::intValue).toArray());
+            }
         }
     }
 
@@ -206,6 +210,40 @@ public class HierarchyBuilder {
         }
 
         return uut;
+    }
+
+    private String readFile(String name) throws IOException {
+        File[] files = Paths.get(".").toFile().listFiles();
+        if (files == null) {
+            throw new ParserException("Invalid parent.");
+        }
+
+        List<Path> paths = new ArrayList<>();
+        for(File file: files) {
+            if(file.getName().equalsIgnoreCase(name)) {
+                paths.add(file.toPath());
+            }
+        }
+
+        int n = paths.size();
+        if (n == 0) {
+            throw new ParserException("File " + name + " does not exist.");
+        } else if (n == 1) {
+            return new String(Files.readAllBytes(paths.get(0)), StandardCharsets.UTF_8);
+        }
+
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            for(int i = 0; i < n; i++) {
+                System.out.println(i + " " + paths.get(i).getFileName());
+            }
+            System.out.print("Please choose file index: ");
+            int choice = sc.nextInt();
+
+            if (choice >= 0 && choice < n) {
+                return new String(Files.readAllBytes(paths.get(choice)), StandardCharsets.UTF_8);
+            }
+        }
     }
 
     public Memory getMemory() {
