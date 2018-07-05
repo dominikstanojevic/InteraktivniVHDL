@@ -5,6 +5,7 @@ import hr.fer.zemris.java.vhdl.models.jobs.AbstractJob;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.nodes.statements.AddressStatement;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,10 +39,8 @@ public class Simulator implements Runnable {
         Set<AddressStatement> statements = table.getStatementsForAddress(address);
 
         TimeQueue queue = environment.getTimeQueue();
-        statements.forEach(s -> {
-            queue.addEvent(new Assign(time + 1, s.getDelay(), s.getAddress(),
-                    s.getExpression().evaluate(environment.getModel())));
-        });
+        statements.forEach(s -> queue.addEvent(new Assign(time + 1, s.getDelay(), s.getAddress(),
+                s.getExpression().evaluate(environment.getModel()))));
     }
 
     public void assign(Integer[] addresses, LogicValue[] values, long time) {

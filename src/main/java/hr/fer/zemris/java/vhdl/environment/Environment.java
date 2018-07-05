@@ -7,6 +7,7 @@ import hr.fer.zemris.java.vhdl.hierarchy.HierarchyBuilder;
 import hr.fer.zemris.java.vhdl.hierarchy.Model;
 import hr.fer.zemris.java.vhdl.lexer.Lexer;
 import hr.fer.zemris.java.vhdl.models.declarations.Declaration;
+import hr.fer.zemris.java.vhdl.models.declarations.PortType;
 import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import hr.fer.zemris.java.vhdl.parser.Parser;
 
@@ -35,6 +36,7 @@ public class Environment {
     public Environment(String program, Map<String, String> signals) {
         HierarchyBuilder hb = new HierarchyBuilder(new Parser(new Lexer(program)).getProgramNode());
         model = new Model(hb.getMemory(), hb.getTable(), hb.getUut());
+
         startTime = System.currentTimeMillis();
         if (signals != null) {
             setInit(signals);
@@ -46,7 +48,7 @@ public class Environment {
         simulator = new Simulator(this);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         int argsLength = args.length;
 
         if (argsLength <= 0) {
@@ -74,7 +76,6 @@ public class Environment {
 
         Set<PositionParser.Definition> def = readPositions(path.substring(0, path
                 .lastIndexOf(".")), environment.getModel().getTable());
-
 
         SwingUtilities.invokeLater(() -> {
             GUI gui = new GUI(environment.model, environment.startTime, def);
@@ -164,14 +165,23 @@ public class Environment {
 
         if(defaultValue != null) {
             Set<Declaration> ports = uut.getPorts();
-            Set<Declaration> defaultPorts = ports.stream().filter(d -> !signals.keySet().contains(d.getLabel())).collect(Collectors.toSet());
 
-            for (Declaration port : defaultPorts) {
-                Integer[] addresses = uut.getAddresses(port);
+            Set<Declaration> inPorts = ports.stream().filter(d -> !signals.keySet().contains(d.getLabel()) && d
+                    .getPortType() == PortType.IN).collect(Collectors.toSet());
+            Set<Declaration> outPorts = ports.stream().filter(d -> !signals.keySet().contains(d.getLabel()) && d
+                    .getPortType() == PortType.OUT).collect(Collectors.toSet());
 
-                for (int i = 0; i < addresses.length; i++) {
-                    model.signalChanged(addresses[i], LogicValue.getValue(defaultValue.charAt(0)), startTime);
-                }
+            initPorts(inPorts, defaultValue);
+            initPorts(outPorts, defaultValue);
+        }
+    }
+
+    public void initPorts(Set<Declaration> ports, String defaultValue) {
+        for (Declaration port : ports) {
+            Integer[] addresses = model.getUut().getAddresses(port);
+
+            for (int i = 0; i < addresses.length; i++) {
+                model.signalChanged(addresses[i], LogicValue.getValue(defaultValue.charAt(0)), startTime);
             }
         }
     }

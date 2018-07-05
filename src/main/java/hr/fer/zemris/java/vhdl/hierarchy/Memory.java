@@ -5,12 +5,13 @@ import hr.fer.zemris.java.vhdl.models.values.LogicValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Dominik on 22.2.2017..
  */
 public class Memory {
-    private List<LogicValue> values = new ArrayList<>();
+    private List<LogicValue> values = Collections.synchronizedList(new ArrayList<>());
 
     public void write(LogicValue[] values, int[] addresses) {
         if (values.length != addresses.length) {
@@ -57,5 +58,13 @@ public class Memory {
         }
 
         return address;
+    }
+
+    public int size() {
+        return values.size();
+    }
+
+    public void print() {
+        values.forEach(System.out::println);
     }
 }

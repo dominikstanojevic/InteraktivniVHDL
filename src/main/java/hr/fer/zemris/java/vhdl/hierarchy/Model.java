@@ -34,6 +34,7 @@ public class Model {
 
     public void signalChanged(int address, LogicValue value, long time) {
         memory.write(value, address);
+        //System.out.println(value + ", " + address);
 
         for (IModelListener listener : listeners) {
             listener.signalChanged(address, time);
@@ -54,5 +55,9 @@ public class Model {
 
     public Component getUut() {
         return uut;
+    }
+
+    public Memory getMemory() {
+        return memory;
     }
 }

@@ -16,10 +16,7 @@ architecture str of x is
 begin
   z1: entity work.adder_4_bit port map (a, b, cin, isum, co1);
   k <= co1 or (isum(3) and isum(2)) or (isum(3) and isum(1));
-  korekcija(0) <= '0';
-  korekcija(1) <= k;
-  korekcija(2) <= k;
-  korekcija(3) <= '0';
+  korekcija <= '0' & k & k & '0';
   z2: entity work.adder_4_bit port map (isum, korekcija, '0', s, co2);
   cout <= k;
 end str;

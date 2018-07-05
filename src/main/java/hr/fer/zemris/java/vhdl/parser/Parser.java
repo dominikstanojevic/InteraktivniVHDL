@@ -551,10 +551,10 @@ public class Parser {
             if (constant.getDeclaration().getType() != portDeclaration.getType()) {
                 throw new ParserException("Invalid type for constant.");
             }
-            if (constant.getDeclaration().getType() == Type.VECTOR_STD_LOGIC &&
-                    constant.getDeclaration().getVectorData().getSize() != portDeclaration.getVectorData().getSize()) {
-                throw new ParserException("Constant vector is not valid size.");
-            }
+//            if (constant.getDeclaration().getType() == Type.VECTOR_STD_LOGIC &&
+//                    constant.getDeclaration().getVectorData().getSize() != portDeclaration.getVectorData().getSize()) {
+//                throw new ParserException("Constant vector is not valid size.");
+//            }
 
             operands.push(constant);
             lexer.nextToken();
