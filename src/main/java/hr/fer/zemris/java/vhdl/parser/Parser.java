@@ -527,7 +527,7 @@ public class Parser {
 
     private void pushOperator(
             String operator, Stack<String> operators, Stack<Expression> operands) {
-        while (!operators.empty() && operators.peek().equals("not")) {
+        while (!operators.empty() && operators.peek().equals("not") && !operator.equals("(")) {
             popOperator(operands, operators);
         }
 
